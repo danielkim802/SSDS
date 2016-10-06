@@ -94,14 +94,7 @@ class eps_hk_basic_t(BigEndianStructure):
 		("reserved2", 		c_uint16)
 	]
 
-# sending side
-struct = TestingStruct()
-struct.field1 = 5
-struct.field2 = 3
-struct.field3 = 257
-
-
-# converts struct into bytearray
+# struct -> byte array
 def c_structToByteArray(s):
     byteArray = (c_byte*(sizeof(s))) ()
     spoint = pointer(s)
@@ -109,11 +102,11 @@ def c_structToByteArray(s):
     memmove(cpoint, spoint, sizeof(s))
     return byteArray
 
-# converts bytearray to int
-def c_byteArrayToInt(b):
-    acc = 0
+# byte array -> long[]
+def c_byteArrayToLongList(b):
+    acc = []
     for n in b:
-        acc = (acc << 8) | n
+        acc += [n]
     return acc
 
 # returns a struct given a string
@@ -122,7 +115,7 @@ def structMaker(s):
 	if s == "hkparam_t": return hkparam_t()
 	return None
 
-# converts bytearray into struct s
+# byte array -> struct
 def c_byteArrayToStruct(b, s):
 	bpoint = pointer(b)
 	struct = structMaker(s)
@@ -130,52 +123,38 @@ def c_byteArrayToStruct(b, s):
 	memmove(spoint, bpoint, sizeof(b))
 	return struct
 
-# converts int to bytearray
-def c_intToByteArray(i):
-	l = len(bin(i))-2 				# 0b111111
-	size = l/8+((l % 8) != 0)
-	compare = 255 << 8*(size-1)		# 0xff00...00
+# long[] -> byte array
+def c_longListToByteArray(i):
+	return (c_byte*len(i)) (*i) 
 
-	acc = []
-	n = 0
-	while n < size:
-		# 0x00...00ff00...00 &
-		# 0xab...efcdee...12 ->
-		# 0x00...00cd00...00 >> (size-n-1)*8 ->
-		# 0x00...000000...cd > acc
-		# compare: 0b111111110000000000000000
-		# value  : 0b000000011110000010101001
-		# and    : 0b000000010000000000000000
+# struct -> byte array -> long[]
+def c_structToLongList(s):
+	return c_byteArrayToLongList(c_structToByteArray(s))
 
-		# compare: 0b000000001111111100000000
-		# value  : 0b000000011110000010101001
-		# and    : 0b000000001110000000000000
+# long[] -> byte array -> struct
+def c_longListToStruct(i, s):
+	return c_byteArrayToStruct(c_longListToByteArray(i), s)
 
-		# compare: 0b000000000000000011111111
-		# value  : 0b000000011110000010101001
-		# and    : 0b000000000000000010101001
-		acc += [(compare & i) >> (size-n-1)*8]
-		compare = compare >> 8
-		n += 1
+def get_hk_1():
+	address = 0x00
+	cmd = 0x08
+	write_i2c_block_data(address, cmd, [])
+	recv = read_i2c_block_data(address, cmd)
+	return c_longListToStruct(recv, "hkparam_t")
 
-	return (c_byte*size) (*acc) 
+# TESTS
+# sending side
+teststruct = TestingStruct()
+teststruct.field1 = 5
+teststruct.field2 = 3
+teststruct.field3 = 257
+send = c_structToLongList(teststruct)
 
-def c_structToInt(s):
-	return c_byteArrayToInt(c_structToByteArray(s))
-
-def c_intToStruct(i, s):
-	return c_byteArrayToStruct(c_intToByteArray(i), s)
-
-send = c_byteArrayToInt(c_structToByteArray(struct))
-recv = c_byteArrayToStruct(c_intToByteArray(send), "TestingStruct")
-recv2 = c_intToStruct(129834761928733332324123421213412333436, "TestingStruct")
-print bin(129834761928733332324123421213412333436)
-print recv2.field3
-
-
-
-
-
+# receiving side
+recv = c_longListToStruct(send, "TestingStruct")
+print recv.field1
+print recv.field2
+print recv.field3
 
 
 
