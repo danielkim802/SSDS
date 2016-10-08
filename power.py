@@ -109,11 +109,15 @@ def c_byteArrayToLongList(b):
         acc += [n]
     return acc
 
-# returns a struct given a string
+# creates a struct given a string
 def structMaker(s):
-	if s == "TestingStruct": return TestingStruct()
 	if s == "hkparam_t": return hkparam_t()
-	return None
+	if s == "eps_hk_t": return eps_hk_t()
+	if s == "eps_hk_vi_t": return eps_hk_vi_t()
+	if s == "eps_hk_out_t": return eps_hk_out_t()
+	if s == "eps_hk_wdt_t": return eps_hk_wdt_t()
+	if s == "eps_hk_basic_t": return eps_hk_basic_t()
+	return TestingStruct()
 
 # byte array -> struct
 def c_byteArrayToStruct(b, s):
@@ -122,6 +126,21 @@ def c_byteArrayToStruct(b, s):
 	spoint = pointer(struct)
 	memmove(spoint, bpoint, sizeof(b))
 	return struct
+
+# takes an int and outputs a long list with the int divided into 
+# [num] number of bytes
+def toBytes(i, num):
+	binary = bin(i)[2:]
+	rem = len(binary) % 8 
+	binary = '0'*(8-rem)+binary 	# add zeros to make it into bytes
+	size = len(binary)/8
+	bytes = '0'*8*(num-size)+binary # add zeros to make it into right num of bytes
+
+	acc = []
+	for n in range(num):
+		acc += [int(bytes[8*n:8*(n+1)], 2)]
+
+	return acc
 
 # long[] -> byte array
 def c_longListToByteArray(i):
@@ -135,14 +154,160 @@ def c_structToLongList(s):
 def c_longListToStruct(i, s):
 	return c_byteArrayToStruct(c_longListToByteArray(i), s)
 
+# ----------------------------------------------COMMANDS
+POWER_ADDRESS = 0x00
+
+# pings 1 byte value
+def ping(value):
+	cmd = 0x01
+	write_i2c_block_data(POWER_ADDRESS, cmd, [value])
+	return read_i2c_block_data(POWER_ADDRESS, cmd)
+
+# reboot the system
+def reboot():
+	cmd = 0x04
+	write_i2c_block_data(POWER_ADDRESS, cmd, [0x80, 0x07, 0x80, 0x07])
+
+# returns hkparam_t struct
 def get_hk_1():
-	address = 0x00
 	cmd = 0x08
-	write_i2c_block_data(address, cmd, [])
-	recv = read_i2c_block_data(address, cmd)
+	write_i2c_block_data(POWER_ADDRESS, cmd, [])
+	recv = read_i2c_block_data(POWER_ADDRESS, cmd)
 	return c_longListToStruct(recv, "hkparam_t")
 
-# TESTS
+# returns eps_hk_t struct
+def get_hk_2():
+	cmd = 0x08
+	write_i2c_block_data(POWER_ADDRESS, cmd, [0x00])
+	recv = read_i2c_block_data(POWER_ADDRESS, cmd)
+	return c_longListToStruct(recv, "eps_hk_t")
+
+# returns eps_hk_vi_t
+def get_hk_2_vi():
+	cmd = 0x08
+	write_i2c_block_data(POWER_ADDRESS, cmd, [0x01])
+	recv = read_i2c_block_data(POWER_ADDRESS, cmd)
+	return c_longListToStruct(recv, "eps_hk_vi_t")
+
+# returns eps_hk_out_t
+def get_hk_out():
+	cmd = 0x08
+	write_i2c_block_data(POWER_ADDRESS, cmd, [0x02])
+	recv = read_i2c_block_data(POWER_ADDRESS, cmd)
+	return c_longListToStruct(recv, "eps_hk_out_t")
+
+# returns eps_hk_wdt_t
+def get_hk_wdt():
+	cmd = 0x08
+	write_i2c_block_data(POWER_ADDRESS, cmd, [0x03])
+	recv = read_i2c_block_data(POWER_ADDRESS, cmd)
+	return c_longListToStruct(recv, "eps_hk_wdt_t")
+
+# returns eps_hk_basic_t
+def get_hk_2_basic():
+	cmd = 0x08
+	write_i2c_block_data(POWER_ADDRESS, cmd, [0x04])
+	recv = read_i2c_block_data(POWER_ADDRESS, cmd)
+	return c_longListToStruct(recv, "eps_hk_basic_t")
+
+# sets voltage output channels with bit mask: 
+# byte [8] -> [NC NC 3.3V3 3.3V2 3.3V1 5V3 5V2 5V1]
+def set_output(byte):
+	cmd = 0x09
+	write_i2c_block_data(POWER_ADDRESS, cmd, [byte])
+
+# sets a single output on or off:
+# channel [8]  -> voltage = (0~5), BP4 heater = 6, BP4 switch = 7
+# value   [8]  -> on = 1, off = 0
+# delay   [16] -> [seconds]
+def set_single_output(channel, value, delay):
+	cmd = 0x0A
+	delay2bytes = toBytes(delay, 2)
+	write_i2c_block_data(POWER_ADDRESS, cmd, [channel, value]+delay2bytes)
+
+# sets voltage on photovoltaic inputs in mV
+# takes effect when MODE = 2 (set_pv_auto)
+def set_pv_volt(volt1, volt2, volt3):
+	cmd = 0x0B
+	v1 = toBytes(volt1, 2)
+	v2 = toBytes(volt2, 2)
+	v3 = toBytes(volt3, 2)
+	write_i2c_block_data(POWER_ADDRESS, cmd, v1+v2+v3)
+
+# Sets the solar cell power tracking mode:
+# MODE = 0: Hardware default power point
+# MODE = 1: Maximum power point tracking
+# MODE = 2: Fixed software powerpoint, value set with SET_PV_VOLT, default 4V
+def set_pv_auto(mode):
+	cmd = 0x0C
+	write_i2c_block_data(POWER_ADDRESS, cmd, [mode])
+
+# Cmd = 0: Set heater on/off 
+# Heater: 0 = BP4, 1= Onboard, 2 = Both
+# Mode: 0 = OFF, 1 = ON
+# returns long list with heater modes
+def set_heater(command, heater, mode):
+	cmd = 0x0D
+	write_i2c_block_data(POWER_ADDRESS, cmd, [command, heater, mode])
+	return get_heater()
+
+# returns long list with heater modes
+def get_heater():
+	cmd = 0x0D
+	return read_i2c_block_data(POWER_ADDRESS, cmd)
+
+# resets boot counter and WDT counters.
+def reset_counters():
+	cmd = 0x0F
+	write_i2c_block_data(POWER_ADDRESS, cmd, [0x42])
+
+# resets (kicks) dedicated WDT.
+def reset_wdt():
+	cmd = 0x10
+	write_i2c_block_data(POWER_ADDRESS, cmd, [0x78])
+
+# Use this command to control the config system.
+# cmd=1: Restore default config
+def config_cmd(command):
+	cmd = 0x11
+	write_i2c_block_data(POWER_ADDRESS, cmd, [command])
+
+# returns eps_config_t structure
+def config_get():
+	cmd = 0x12
+	return read_i2c_block_data(POWER_ADDRESS, cmd)
+
+# takes eps_config_t struct and sets configuration
+def config_set(struct):
+	cmd = 0x13
+	longlist = c_structToLongList(struct)
+	write_i2c_block_data(POWER_ADDRESS, cmd, longlist)
+
+# Send this command to perform a hard reset of the P31,
+# including cycling permanent 5V and 3.3V and battery outputs.
+def hard_reset():
+	cmd = 0x14
+	write_i2c_block_data(POWER_ADDRESS, cmd, [])
+
+# Use this command to control the config 2 system.
+# cmd=1: Restore default config cmd=2: Confirm current config
+def config2_cmd(command):
+	cmd =  0x15
+	write_i2c_block_data(POWER_ADDRESS, cmd, [command])
+
+# Use this command to request the P31 config 2.
+def config2_get():
+	cmd = 0x16
+	return read_i2c_block_data(POWER_ADDRESS, cmd)
+
+# Use this command to send config 2 to the P31
+# and save it (remember to also confirm it)
+def config2_set(struct):
+	cmd = 0x17
+	longlist = c_structToLongList(struct)
+	write_i2c_block_data(POWER_ADDRESS, cmd, longlist)
+
+# ----------------------------------------------TESTS
 # sending side
 teststruct = TestingStruct()
 teststruct.field1 = 5
@@ -156,5 +321,10 @@ print recv.field1
 print recv.field2
 print recv.field3
 
+longlist = [1, 5, 300]
+array = c_longListToByteArray(longlist)
+print array[1]
+print bin(300)
+print int('00101100', 2)
 
 
