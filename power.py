@@ -1,6 +1,5 @@
-import ctypes
 from ctypes import *
-import smbus
+#from pigpio import *
 
 class TestingStruct(BigEndianStructure):
     _fields_ = [
@@ -95,7 +94,32 @@ class eps_hk_basic_t(BigEndianStructure):
 		("reserved2", 		c_uint16)
 	]
 
-# struct -> byte array
+class eps_config_t(BigEndianStructure):
+	_fields_ = [
+		("ppt_mode", 					c_uint8), 		# Mode for PPT [1 = AUTO, 2 = FIXED]
+		("battheater_mode", 			c_uint8), 		# Mode for battheater [0 = Manual, 1 = Auto]
+		("battheater_low", 				c_int8), 		# Turn heater on at [degC]
+		("battheater_high", 			c_int8), 		# Turn heater off at [degC]
+		("output_normal_value", 		c_uint8*8), 	# Nominal mode output value
+		("output_safe_value", 			c_uint8*8), 	# Safe mode output value
+		("output_initial_on_delay", 	c_uint16*8), 	# Output switches: init with these on delays [s]
+		("output_initial_off_delay", 	c_uint16*8), 	# Output switches: init with these on delays [s]
+		("vboost", 						c_uint16*3) 	# Fixed PPT point for boost converters [mV]
+	]
+
+class eps_config2_t(BigEndianStructure):
+	_fields_ = [
+		("batt_maxvoltage", 		c_uint16),
+		("batt_safevoltage", 		c_uint16),
+		("batt_criticalvoltage", 	c_uint16),
+		("batt_normalvoltage", 		c_uint16),
+		("reserved1", 				c_uint32*2),
+		("reserved2", 				c_uint8*4)
+	]
+
+
+# ----------------------------------------------HELPERS
+# struct -> c_bytearray
 def c_structToByteArray(s):
     byteArray = (c_byte*(sizeof(s))) ()
     spoint = pointer(s)
@@ -103,22 +127,22 @@ def c_structToByteArray(s):
     memmove(cpoint, spoint, sizeof(s))
     return byteArray
 
-# byte array -> long[]
-def c_byteArrayToLongList(b):
+# c_bytearray -> bytearray
+def c_byteArrayToBytes(b):
     acc = []
     for n in b:
         acc += [n]
-    return acc
+    return bytearray(acc)
 
-# byte array -> struct
-def c_byteArrayToStruct(b, s):c
+# c_bytearray -> struct
+def c_byteArrayToStruct(b, s):
 	bpoint = pointer(b)
 	struct = structMaker(s)
 	spoint = pointer(struct)
 	memmove(spoint, bpoint, sizeof(b))
 	return struct
 
-# takes an int and outputs a long list with the int divided into 
+# takes an int and outputs a bytearray with the int divided into 
 # [num] number of bytes
 def toBytes(i, num):
 	binary = bin(i)[2:]
@@ -131,19 +155,26 @@ def toBytes(i, num):
 	for n in range(num):
 		acc += [int(bytes[8*n:8*(n+1)], 2)]
 
-	return acc
+	return bytearray(acc)
 
-# long[] -> byte array
-def c_longListToByteArray(i):
+# bytearray -> c_bytearray
+def c_bytesToByteArray(i):
 	return (c_byte*len(i)) (*i) 
 
-# struct -> byte array -> long[]
-def c_structToLongList(s):
-	return c_byteArrayToLongList(c_structToByteArray(s))
+# struct -> c_bytearray -> bytearray
+def c_structToBytes(s):
+	return c_byteArrayToBytes(c_structToByteArray(s))
 
-# long[] -> byte array -> struct
-def c_longListToStruct(i, s):
-	return c_byteArrayToStruct(c_longListToByteArray(i), s)
+# bytearray -> c_bytearray -> struct
+def c_bytesToStruct(i, s):
+	return c_byteArrayToStruct(c_bytesToByteArray(i), s)
+
+# bytearray -> int[]
+def bytesToList(b):
+	acc = []
+	for n in b:
+		acc += [n]
+	return acc
 
 # creates a struct given a string
 def structMaker(s):
@@ -155,179 +186,199 @@ def structMaker(s):
 	if s == "eps_hk_basic_t": return eps_hk_basic_t()
 	return TestingStruct()
 
-# ----------------------------------------------COMMANDS
+#----------------------------------------------POWER
+# device address
+POWER_ADDRESS   		= 0x00
 
-POWER_ADDRESS = 0x00 # don't know actual device address yet
-bus = smbus.SMBus(1)
+# command registers
+CMD_PING				= 0x01
+CMD_REBOOT				= 0x04
+CMD_GET_HK 	    		= 0x08
+CMD_SET_OUTPUT  		= 0x09
+CMD_SET_SINGLE_OUTPUT 	= 0x0A
+CMD_SET_PV_VOLT			= 0x0B
+CMD_SET_PV_AUTO			= 0x0C
+CMD_SET_HEATER			= 0x0D
+CMD_RESET_COUNTERS		= 0x0F
+CMD_RESET_WDT			= 0x10
+CMD_CONFIG_CMD			= 0x11
+CMD_CONFIG_GET			= 0x12
+CMD_CONFIG_SET			= 0x13
+CMD_HARD_RESET			= 0x14
+CMD_CONFIG2_CMD			= 0x15
+CMD_CONFIG2_GET			= 0x16
+CMD_CONFIG2_SET			= 0x17
 
-# pings 1 byte value
-def ping(value):
-	cmd = 0x01
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [value])
-	return bus.read_i2c_block_data(POWER_ADDRESS, cmd)
+# struct lengths
+SIZE_HKPARAM_T 			= 44
+SIZE_EPS_HK_T 			= 136
+SIZE_EPS_HK_VI_T 		= 20
+SIZE_EPS_HK_OUT_T 		= 64
+SIZE_EPS_HK_WDT_T 		= 28
+SIZE_EPS_HK_BASIC_T 	= 24
+SIZE_ESP_CONFIG_T		= 58
+SIZE_ESP_CONFIG2_T		= 20
 
-# reboot the system
-def reboot():
-	cmd = 0x04
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [0x80, 0x07, 0x80, 0x07])
+class Power(object):
+	# initializes power object with bus [bus] and device address [addr]
+	def __init__(self, bus, addr, flags=0):
+		self._pi = pigpio.pi()								# initialize pigpio object
+		self._dev = self._pi.i2c_open(bus, addr, flags)		# initialize i2c device
 
-# returns hkparam_t struct
-def get_hk_1():
-	cmd = 0x08
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [])
-	recv = bus.read_i2c_block_data(POWER_ADDRESS, cmd)
-	return c_longListToStruct(recv, "hkparam_t")
+	# writes byte list [values] to register [cmd]
+	def write(self, cmd, values):
+		self._pi.i2c_write_device(self._dev, bytearray([cmd]+values))
 
-# returns eps_hk_t struct
-def get_hk_2():
-	cmd = 0x08
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [0x00])
-	recv = bus.read_i2c_block_data(POWER_ADDRESS, cmd)
-	return c_longListToStruct(recv, "eps_hk_t")
+	# reads [bytes] number of bytes from the device and returns a bytearray
+	def read(self, bytes):
+		(x, r) = self._pi.i2c_read_device(self._dev, bytes)
+		return r
 
-# returns eps_hk_vi_t
-def get_hk_2_vi():
-	cmd = 0x08
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [0x01])
-	recv = bus.read_i2c_block_data(POWER_ADDRESS, cmd)
-	return c_longListToStruct(recv, "eps_hk_vi_t")
+	# pings value
+	# value [1 byte]
+	def ping(self, value):
+		self.write(CMD_PING, [value])
+		return self.read(1)
 
-# returns eps_hk_out_t
-def get_hk_out():
-	cmd = 0x08
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [0x02])
-	recv = bus.read_i2c_block_data(POWER_ADDRESS, cmd)
-	return c_longListToStruct(recv, "eps_hk_out_t")
+	# reboot the system
+	def reboot(self):
+		self.write(CMD_REBOOT, [0x80, 0x07, 0x80, 0x07])
 
-# returns eps_hk_wdt_t
-def get_hk_wdt():
-	cmd = 0x08
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [0x03])
-	recv = bus.read_i2c_block_data(POWER_ADDRESS, cmd)
-	return c_longListToStruct(recv, "eps_hk_wdt_t")
+	# returns hkparam_t struct
+	def get_hk_1(self):
+		self.write(CMD_GET_HK, [])
+		array = self.read(SIZE_HKPARAM_T)
+		return c_bytesToStruct(array)
 
-# returns eps_hk_basic_t
-def get_hk_2_basic():
-	cmd = 0x08
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [0x04])
-	recv = bus.read_i2c_block_data(POWER_ADDRESS, cmd)
-	return c_longListToStruct(recv, "eps_hk_basic_t")
+	# returns eps_hk_t struct
+	def get_hk_2(self):
+		self.write(CMD_GET_HK, [0x00])
+		array = self.read(SIZE_EPS_HK_T)
+		return c_bytesToStruct(array)
 
-# sets voltage output channels with bit mask: 
-# byte [8] -> [NC NC 3.3V3 3.3V2 3.3V1 5V3 5V2 5V1]
-def set_output(byte):
-	cmd = 0x09
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [byte])
+	# returns eps_hk_vi_t struct
+	def get_hk_2_vi(self):
+		self.write(CMD_GET_HK, [0x01])
+		array = self.read(SIZE_EPS_HK_VI_T)
+		return c_bytesToStruct(array)
 
-# sets a single output on or off:
-# channel [8]  -> voltage = (0~5), BP4 heater = 6, BP4 switch = 7
-# value   [8]  -> on = 1, off = 0
-# delay   [16] -> [seconds]
-def set_single_output(channel, value, delay):
-	cmd = 0x0A
-	delay2bytes = toBytes(delay, 2)
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [channel, value]+delay2bytes)
+	# returns eps_hk_out_t struct
+	def get_hk_out(self):
+		self.write(CMD_GET_HK, [0x02])
+		array = self.read(SIZE_EPS_HK_OUT_T)
+		return c_bytesToStruct(array)
 
-# sets voltage on photovoltaic inputs in mV
-# takes effect when MODE = 2 (set_pv_auto)
-def set_pv_volt(volt1, volt2, volt3):
-	cmd = 0x0B
-	v1 = toBytes(volt1, 2)
-	v2 = toBytes(volt2, 2)
-	v3 = toBytes(volt3, 2)
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, v1+v2+v3)
+	# returns eps_hk_wdt_t struct
+	def get_hk_wdt(self):
+		self.write(CMD_GET_HK, [0x03])
+		array = self.read(SIZE_EPS_HK_WDT_T)
+		return c_bytesToStruct(array)
 
-# Sets the solar cell power tracking mode:
-# MODE = 0: Hardware default power point
-# MODE = 1: Maximum power point tracking
-# MODE = 2: Fixed software powerpoint, value set with SET_PV_VOLT, default 4V
-def set_pv_auto(mode):
-	cmd = 0x0C
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [mode])
+	# returns eps_hk_basic_t struct
+	def get_hk_2_basic(self):
+		self.write(CMD_GET_HK, [0x04])
+		array = self.read(SIZE_EPS_HK_BASIC_T)
+		return c_bytesToStruct(array)
 
-# Cmd = 0: Set heater on/off 
-# Heater: 0 = BP4, 1= Onboard, 2 = Both
-# Mode: 0 = OFF, 1 = ON
-# returns long list with heater modes
-def set_heater(command, heater, mode):
-	cmd = 0x0D
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [command, heater, mode])
-	return get_heater()
+	# sets voltage output channels with bit mask: 
+	# byte [1 byte] -> [NC NC 3.3V3 3.3V2 3.3V1 5V3 5V2 5V1]
+	def set_output(self, byte):
+		self.write(CMD_SET_OUTPUT, [byte])
 
-# returns long list with heater modes
-def get_heater():
-	cmd = 0x0D
-	return bus.read_i2c_block_data(POWER_ADDRESS, cmd)
+	# sets a single output on or off:
+	# channel [1 byte]  -> voltage = (0~5), BP4 heater = 6, BP4 switch = 7
+	# value   [1 byte]  -> on = 1, off = 0
+	# delay   [2 bytes] -> [seconds]
+	def set_single_output(self, channel, value, delay):
+		d = toBytes(delay)
+		self.write(CMD_SET_SINGLE_OUTPUT, [channel, value]+[d[0], d[1]])
 
-# resets boot counter and WDT counters.
-def reset_counters():
-	cmd = 0x0F
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [0x42])
+	# Set the voltage on the photo- voltaic inputs V1, V2, V3 in mV. 
+	# Takes effect when MODE = 2, See SET_PV_AUTO.
+	# Transmit voltage1 first and voltage3 last.
+	# volt1~volt3 [2 bytes] -> value in mV
+	def set_pv_volt(self, volt1, volt2, volt3):
+		v = bytearray(6)
+		v[0:1] = toBytes(volt1)
+		v[2:3] = toBytes(volt2)
+		v[4:5] = toBytes(volt3)
+		self.write(CMD_SET_PV_VOLT, [v[0], v[1], v[2], v[3], v[4], v[5], v[6]])
 
-# resets (kicks) dedicated WDT.
-def reset_wdt():
-	cmd = 0x10
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [0x78])
+	# Sets the solar cell power tracking mode:
+	# mode [1 byte] ->
+	# MODE = 0: Hardware default power point
+	# MODE = 1: Maximum power point tracking
+	# MODE = 2: Fixed software powerpoint, value set with SET_PV_VOLT, default 4V
+	def set_pv_auto(self, mode):
+		self.write(CMD_SET_PV_AUTO, [mode])
 
-# Use this command to control the config system.
-# cmd=1: Restore default config
-def config_cmd(command):
-	cmd = 0x11
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [command])
+	# returns bytearray with heater modes
+	# command 	[1 byte]  -> 0 = Set heater on/off (toggle?)
+	# heater 	[1 byte]  -> 0 = BP4, 1 = Onboard, 2 = Both
+	# mode 		[1 byte]  -> 0 = OFF, 1 = ON
+	# return 	[2 bytes] -> heater modes
+	def set_heater(self, command, heater, mode):
+		self.write(CMD_SET_HEATER, [command, heater, mode])
+		return self.read(2)
 
-# returns eps_config_t structure
-def config_get():
-	cmd = 0x12
-	return bus.read_i2c_block_data(POWER_ADDRESS, cmd)
+	# resets boot counter and WDT counters.
+	def reset_counters(self):
+		self.write(CMD_RESET_COUNTERS, [0x42])
 
-# takes eps_config_t struct and sets configuration
-def config_set(struct):
-	cmd = 0x13
-	longlist = c_structToLongList(struct)
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, longlist)
+	# resets (kicks) dedicated WDT.
+	def reset_wdt(self):
+		self.write(CMD_RESET_WDT, [0x78])
 
-# Send this command to perform a hard reset of the P31,
-# including cycling permanent 5V and 3.3V and battery outputs.
-def hard_reset():
-	cmd = 0x14
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [])
+	# Use this command to control the config system.
+	# cmd [1 byte] -> cmd = 1: Restore default config
+	def config_cmd(self, command):
+		self.write(CMD_CONFIG2_CMD, [command])
 
-# Use this command to control the config 2 system.
-# cmd=1: Restore default config cmd=2: Confirm current config
-def config2_cmd(command):
-	cmd =  0x15
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, [command])
+	# returns eps_config_t structure
+	def config_get(self):
+		self.write(CMD_CONFIG_GET, [])
+		return c_bytesToStruct(self.read())
 
-# Use this command to request the P31 config 2.
-def config2_get():
-	cmd = 0x16
-	return bus.read_i2c_block_data(POWER_ADDRESS, cmd)
+	# takes eps_config_t struct and sets configuration
+	def config_set(self, struct):
+		array = bytesToList(c_structToBytes(struct))
+		self.write(CMD_CONFIG_SET, array)
 
-# Use this command to send config 2 to the P31
-# and save it (remember to also confirm it)
-def config2_set(struct):
-	cmd = 0x17
-	longlist = c_structToLongList(struct)
-	bus.write_i2c_block_data(POWER_ADDRESS, cmd, longlist)
+	# Send this command to perform a hard reset of the P31,
+	# including cycling permanent 5V and 3.3V and battery outputs.
+	def hard_reset(self):
+		self.write(CMD_HARD_RESET, [])
+
+	# Use this command to control the config 2 system.
+	# cmd [1 byte] -> cmd=1: Restore default config; cmd=2: Confirm current config
+	def config2_cmd(self, command):
+		self.write(CMD_CONFIG2_CMD, [command])
+
+	# Use this command to request the P31 config 2.
+	# returns esp_config2_t struct
+	def config2_get(self):
+		self.write(CMD_CONFIG2_GET, [])
+		return self.read(SIZE_ESP_CONFIG2_T)
+
+	# Use this command to send config 2 to the P31
+	# and save it (remember to also confirm it)
+	def config2_set(self, struct):
+		array = bytesToList(c_structToBytes(struct))
+		self.write(CMD_CONFIG2_SET, array)
 
 # ----------------------------------------------TESTS
 # sending side
-teststruct = TestingStruct()
+teststruct = eps_config2_t()
 teststruct.field1 = 5
 teststruct.field2 = 3
 teststruct.field3 = 257
-send = c_structToLongList(teststruct)
+send = c_structToBytes(teststruct)
+print len(send)
 
 # receiving side
-recv = c_longListToStruct(send, "TestingStruct")
-print recv.field1
-print recv.field2
-print recv.field3
-
-longlist = [1, 5, 300]
-array = c_longListToByteArray(longlist)
-print array[1]
-print bin(300)
-print int('00101100', 2)
+recv = c_bytesToStruct(send, "hkparam_t")
+# print recv.field1
+# print recv.field2
+# print recv.field3
 
 
