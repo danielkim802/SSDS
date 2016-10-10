@@ -119,6 +119,19 @@ class eps_config2_t(BigEndianStructure):
 
 
 # ----------------------------------------------HELPERS
+# creates a struct given a string
+def structMaker(s):
+	assert type(s) == str
+	if s == "hkparam_t": return hkparam_t()
+	if s == "eps_hk_t": return eps_hk_t()
+	if s == "eps_hk_vi_t": return eps_hk_vi_t()
+	if s == "eps_hk_out_t": return eps_hk_out_t()
+	if s == "eps_hk_wdt_t": return eps_hk_wdt_t()
+	if s == "eps_hk_basic_t": return eps_hk_basic_t()
+	if s == "eps_config_t": return eps_config_t()
+	if s == "eps_config2_t": return eps_config2_t()
+	return TestingStruct()
+
 # struct -> c_bytearray
 def c_structToByteArray(s):
     byteArray = (c_byte*(sizeof(s))) ()
@@ -131,7 +144,8 @@ def c_structToByteArray(s):
 def c_byteArrayToBytes(b):
     acc = []
     for n in b:
-        acc += [n]
+    	if n < 0: acc += [256+n]	# adjust for negative values
+        else: acc += [n]
     return bytearray(acc)
 
 # c_bytearray -> struct
@@ -176,19 +190,9 @@ def bytesToList(b):
 		acc += [n]
 	return acc
 
-# creates a struct given a string
-def structMaker(s):
-	if s == "hkparam_t": return hkparam_t()
-	if s == "eps_hk_t": return eps_hk_t()
-	if s == "eps_hk_vi_t": return eps_hk_vi_t()
-	if s == "eps_hk_out_t": return eps_hk_out_t()
-	if s == "eps_hk_wdt_t": return eps_hk_wdt_t()
-	if s == "eps_hk_basic_t": return eps_hk_basic_t()
-	return TestingStruct()
-
 #----------------------------------------------POWER
 # device address
-POWER_ADDRESS   		= 0x00
+POWER_ADDRESS   		= 0x00	# replace with actual address
 
 # command registers
 CMD_PING				= 0x01
@@ -302,7 +306,7 @@ class Power(object):
 		v[0:1] = toBytes(volt1)
 		v[2:3] = toBytes(volt2)
 		v[4:5] = toBytes(volt3)
-		self.write(CMD_SET_PV_VOLT, [v[0], v[1], v[2], v[3], v[4], v[5], v[6]])
+		self.write(CMD_SET_PV_VOLT, [v[0], v[1], v[2], v[3], v[4], v[5]])
 
 	# Sets the solar cell power tracking mode:
 	# mode [1 byte] ->
@@ -341,6 +345,7 @@ class Power(object):
 
 	# takes eps_config_t struct and sets configuration
 	def config_set(self, struct):
+		assert type(struct) == eps_config_t
 		array = bytesToList(c_structToBytes(struct))
 		self.write(CMD_CONFIG_SET, array)
 
@@ -368,17 +373,20 @@ class Power(object):
 
 # ----------------------------------------------TESTS
 # sending side
-teststruct = eps_config2_t()
-teststruct.field1 = 5
-teststruct.field2 = 3
+teststruct = TestingStruct()
+teststruct.field1 = 25
+teststruct.field2 = 255
 teststruct.field3 = 257
 send = c_structToBytes(teststruct)
-print len(send)
+print send[0]
+print send[1]
+print send[2]
+print send[3]
 
 # receiving side
-recv = c_bytesToStruct(send, "hkparam_t")
-# print recv.field1
-# print recv.field2
-# print recv.field3
+recv = c_bytesToStruct(send, "TestingStruct")
+print recv.field1
+print recv.field2
+print recv.field3
 
 
