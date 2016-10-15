@@ -1,5 +1,5 @@
 from ctypes import *
-#from pigpio import *
+from pigpio import *
 
 class TestingStruct(BigEndianStructure):
     _fields_ = [
@@ -183,7 +183,7 @@ def c_structToBytes(s):
 def c_bytesToStruct(i, s):
 	return c_byteArrayToStruct(c_bytesToByteArray(i), s)
 
-# bytearray -> int[]
+# bytearray -> byte[]
 def bytesToList(b):
 	acc = []
 	for n in b:
@@ -226,7 +226,7 @@ SIZE_ESP_CONFIG2_T		= 20
 class Power(object):
 	# initializes power object with bus [bus] and device address [addr]
 	def __init__(self, bus, addr, flags=0):
-		self._pi = pigpio.pi()								# initialize pigpio object
+		self._pi = pi()										# initialize pigpio object
 		self._dev = self._pi.i2c_open(bus, addr, flags)		# initialize i2c device
 
 	# writes byte list [values] to register [cmd]
@@ -370,23 +370,4 @@ class Power(object):
 	def config2_set(self, struct):
 		array = bytesToList(c_structToBytes(struct))
 		self.write(CMD_CONFIG2_SET, array)
-
-# ----------------------------------------------TESTS
-# sending side
-teststruct = TestingStruct()
-teststruct.field1 = 25
-teststruct.field2 = 255
-teststruct.field3 = 257
-send = c_structToBytes(teststruct)
-print send[0]
-print send[1]
-print send[2]
-print send[3]
-
-# receiving side
-recv = c_bytesToStruct(send, "TestingStruct")
-print recv.field1
-print recv.field2
-print recv.field3
-
 
