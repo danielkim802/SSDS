@@ -241,9 +241,13 @@ class Power(object):
         self._pi.i2c_write_device(self._dev, bytearray(reverseList([cmd]+values)))
 
     # reads [bytes] number of bytes from the device and returns a bytearray
-    def read(self, bytes):
-        (x, r) = self._pi.i2c_read_device(self._dev, bytes+2)
-        return r[2:]
+    def read(self, bytes, data=False): # for structs, 2 bytes of [command][errors] is sent
+        if data:
+            (x, r) = self._pi.i2c_read_device(self._dev, bytes+2)
+            return r[2:]
+        else:
+            (x, r) = self._pi.i2c_read_device(self._dev, bytes)
+            return r
 
     # pings value
     # value [1 byte]
@@ -258,37 +262,37 @@ class Power(object):
     # returns hkparam_t struct
     def get_hk_1(self):
         self.write(CMD_GET_HK, [])
-        array = self.read(SIZE_HKPARAM_T)
+        array = self.read(SIZE_HKPARAM_T, True)
         return c_bytesToStruct(array, "hkparam_t")
 
     # returns eps_hk_t struct
     def get_hk_2(self):
         self.write(CMD_GET_HK, [0x00])
-        array = self.read(SIZE_EPS_HK_T)
+        array = self.read(SIZE_EPS_HK_T, True)
         return c_bytesToStruct(array, "eps_hk_t")
 
     # returns eps_hk_vi_t struct
     def get_hk_2_vi(self):
         self.write(CMD_GET_HK, [0x01])
-        array = self.read(SIZE_EPS_HK_VI_T)
+        array = self.read(SIZE_EPS_HK_VI_T, True)
         return c_bytesToStruct(array, "eps_hk_vi_t")
 
     # returns eps_hk_out_t struct
     def get_hk_out(self):
         self.write(CMD_GET_HK, [0x02])
-        array = self.read(SIZE_EPS_HK_OUT_T)
+        array = self.read(SIZE_EPS_HK_OUT_T, True)
         return c_bytesToStruct(array, "eps_hk_out_t")
 
     # returns eps_hk_wdt_t struct
     def get_hk_wdt(self):
         self.write(CMD_GET_HK, [0x03])
-        array = self.read(SIZE_EPS_HK_WDT_T)
+        array = self.read(SIZE_EPS_HK_WDT_T, True)
         return c_bytesToStruct(array, "eps_hk_wdt_t")
 
     # returns eps_hk_basic_t struct
     def get_hk_2_basic(self):
         self.write(CMD_GET_HK, [0x04])
-        array = self.read(SIZE_EPS_HK_BASIC_T)
+        array = self.read(SIZE_EPS_HK_BASIC_T, True)
         return c_bytesToStruct(array, "eps_hk_basic_t")
 
     # sets voltage output channels with bit mask: 
@@ -348,7 +352,7 @@ class Power(object):
     # returns eps_config_t structure
     def config_get(self):
         self.write(CMD_CONFIG_GET, [])
-        return c_bytesToStruct(self.read(SIZE_ESP_CONFIG_T), "eps_config_t")
+        return c_bytesToStruct(self.read(SIZE_ESP_CONFIG_T, True), "eps_config_t")
 
     # takes eps_config_t struct and sets configuration
     def config_set(self, struct):
@@ -370,7 +374,7 @@ class Power(object):
     # returns esp_config2_t struct
     def config2_get(self):
         self.write(CMD_CONFIG2_GET, [])
-        return self.read(SIZE_ESP_CONFIG2_T)
+        return self.read(SIZE_ESP_CONFIG2_T, True)
 
     # Use this command to send config 2 to the P31
     # and save it (remember to also confirm it)
