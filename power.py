@@ -348,7 +348,7 @@ class Power(object):
     # returns eps_config_t structure
     def config_get(self):
         self.write(CMD_CONFIG_GET, [])
-        return c_bytesToStruct(self.read(), "eps_config_t")
+        return c_bytesToStruct(self.read(SIZE_ESP_CONFIG_T), "eps_config_t")
 
     # takes eps_config_t struct and sets configuration
     def config_set(self, struct):
