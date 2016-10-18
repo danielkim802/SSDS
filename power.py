@@ -199,7 +199,7 @@ def reverseList(l):
 
 #----------------------------------------------POWER
 # device address
-POWER_ADDRESS           = 0x02d  # replace with actual address
+POWER_ADDRESS           = 0x02  # replace with actual address
 
 # command registers
 CMD_PING                = 0x01
@@ -259,37 +259,37 @@ class Power(object):
     def get_hk_1(self):
         self.write(CMD_GET_HK, [])
         array = self.read(SIZE_HKPARAM_T)
-        return c_bytesToStruct(array)
+        return c_bytesToStruct(array, "hkparam_t")
 
     # returns eps_hk_t struct
     def get_hk_2(self):
         self.write(CMD_GET_HK, [0x00])
         array = self.read(SIZE_EPS_HK_T)
-        return c_bytesToStruct(array)
+        return c_bytesToStruct(array, "eps_hk_t")
 
     # returns eps_hk_vi_t struct
     def get_hk_2_vi(self):
         self.write(CMD_GET_HK, [0x01])
         array = self.read(SIZE_EPS_HK_VI_T)
-        return c_bytesToStruct(array)
+        return c_bytesToStruct(array, "eps_hk_vi_t")
 
     # returns eps_hk_out_t struct
     def get_hk_out(self):
         self.write(CMD_GET_HK, [0x02])
         array = self.read(SIZE_EPS_HK_OUT_T)
-        return c_bytesToStruct(array)
+        return c_bytesToStruct(array, "eps_hk_out_t")
 
     # returns eps_hk_wdt_t struct
     def get_hk_wdt(self):
         self.write(CMD_GET_HK, [0x03])
         array = self.read(SIZE_EPS_HK_WDT_T)
-        return c_bytesToStruct(array)
+        return c_bytesToStruct(array, "eps_hk_wdt_t")
 
     # returns eps_hk_basic_t struct
     def get_hk_2_basic(self):
         self.write(CMD_GET_HK, [0x04])
         array = self.read(SIZE_EPS_HK_BASIC_T)
-        return c_bytesToStruct(array)
+        return c_bytesToStruct(array, "eps_hk_basic_t")
 
     # sets voltage output channels with bit mask: 
     # byte [1 byte] -> [NC NC 3.3V3 3.3V2 3.3V1 5V3 5V2 5V1]
@@ -348,7 +348,7 @@ class Power(object):
     # returns eps_config_t structure
     def config_get(self):
         self.write(CMD_CONFIG_GET, [])
-        return c_bytesToStruct(self.read())
+        return c_bytesToStruct(self.read(), "eps_config_t")
 
     # takes eps_config_t struct and sets configuration
     def config_set(self, struct):
