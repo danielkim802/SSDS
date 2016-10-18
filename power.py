@@ -242,8 +242,8 @@ class Power(object):
 
     # reads [bytes] number of bytes from the device and returns a bytearray
     def read(self, bytes):
-        (x, r) = self._pi.i2c_read_device(self._dev, bytes)
-        return r
+        (x, r) = self._pi.i2c_read_device(self._dev, bytes+2)
+        return r[2:]
 
     # pings value
     # value [1 byte]
