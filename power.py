@@ -244,6 +244,8 @@ class Power(object):
     def read(self, bytes, data=False): # for structs, 2 bytes of [command][errors] is sent
         if data:
             (x, r) = self._pi.i2c_read_device(self._dev, bytes+2)
+            if r[1] != 0:
+                print "Command "+str(r[0])+" failed with error code "+str(r[1])
             return r[2:]
         else:
             (x, r) = self._pi.i2c_read_device(self._dev, bytes)
