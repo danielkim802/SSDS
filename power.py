@@ -190,9 +190,16 @@ def bytesToList(b):
         acc += [n]
     return acc
 
+# reverses a list
+def reverseList(l):
+    acc = []
+    for n in l:
+        acc = [n]+acc
+    return acc
+
 #----------------------------------------------POWER
 # device address
-POWER_ADDRESS           = 0x00  # replace with actual address
+POWER_ADDRESS           = 0x02d  # replace with actual address
 
 # command registers
 CMD_PING                = 0x01
@@ -231,7 +238,7 @@ class Power(object):
 
     # writes byte list [values] to register [cmd]
     def write(self, cmd, values):
-        self._pi.i2c_write_device(self._dev, bytearray([cmd]+values))
+        self._pi.i2c_write_device(self._dev, bytearray(reverseList([cmd]+values)))
 
     # reads [bytes] number of bytes from the device and returns a bytearray
     def read(self, bytes):
@@ -357,7 +364,7 @@ class Power(object):
     # Use this command to control the config 2 system.
     # cmd [1 byte] -> cmd=1: Restore default config; cmd=2: Confirm current config
     def config2_cmd(self, command):
-        self.write(CMD_CONFIG2_CMD, [command])
+        self.write(CMD_CONFIG2_CMD, [command]) 
 
     # Use this command to request the P31 config 2.
     # returns esp_config2_t struct
