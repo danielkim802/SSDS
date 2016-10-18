@@ -305,7 +305,7 @@ class Power(object):
     # value   [1 byte]  -> on = 1, off = 0
     # delay   [2 bytes] -> [seconds]
     def set_single_output(self, channel, value, delay):
-        d = toBytes(delay)
+        d = toBytes(delay, 2)
         self.write(CMD_SET_SINGLE_OUTPUT, [channel, value]+[d[0], d[1]])
 
     # Set the voltage on the photo- voltaic inputs V1, V2, V3 in mV. 
@@ -314,9 +314,9 @@ class Power(object):
     # volt1~volt3 [2 bytes] -> value in mV
     def set_pv_volt(self, volt1, volt2, volt3):
         v = bytearray(6)
-        v[0:1] = toBytes(volt1)
-        v[2:3] = toBytes(volt2)
-        v[4:5] = toBytes(volt3)
+        v[0:1] = toBytes(volt1, 2)
+        v[2:3] = toBytes(volt2, 2)
+        v[4:5] = toBytes(volt3, 2)
         self.write(CMD_SET_PV_VOLT, [v[0], v[1], v[2], v[3], v[4], v[5]])
 
     # Sets the solar cell power tracking mode:
