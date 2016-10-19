@@ -190,9 +190,25 @@ def bytesToList(b):
         acc += [n]
     return acc
 
+# prints housekeeping info given hkparam_t object
+def displayHK(hk):
+    print "***************-HOUSEKEEPING-***************"
+    print "Photo-voltaic inputs:        "+"1-"+str(hk.pv[0])+"mV 2-"+str(hk.pv[1])+"mV 3-"+str(hk.pv[2])+"mV"
+    print "Total photo current:         "+str(hk.pc)+"mA"
+    print "Battery voltage:             "+str(hk.bv)+"mV"
+    print "Total system current:        "+str(hk.sc)+"mA"
+    print "Temp of boost converters:    "+"1-"+str(hk.temp[0])+"C 2-"+str(hk.temp[1])+"C 3-"+str(hk.temp[2])+"C batt-"+str(hk.temp[4])+"C"
+    print "External batt temp:          "+str(hk.batt_temp)+"C"
+    print "Latchups:                    "+"1-["+str(hk.latchup[0])+"] 2-["+str(hk.latchup[1])+" 3-["+str(hk.latchup[2])+"] 4-["+str(hk.latchup[3])+"] 5-["+str(hk.latchup[4])+"] 6-["+str(hk.latchup[5])+"]"
+    print "Cause of last reset:         "+str(hk.reset)
+    print "Number of reboots:           "+str(hk.bootcount)
+    print "Number of software errors:   "+str(hk.sw_errors)
+    print "PPT mode:                    "+str(hk.ppt_mode)
+    print "Channel output:              "+str(bin(hk.channel_status))[2:]
+
 #----------------------------------------------POWER
 # device address
-POWER_ADDRESS           = 0x02  # replace with actual address
+POWER_ADDRESS           = 0x02
 
 # command registers
 CMD_PING                = 0x01
