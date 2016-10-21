@@ -208,8 +208,8 @@ def displayHK(hk):
     print "Battery voltage:             "+str(hk.bv)+"mV"
     print "Total system current:        "+str(hk.sc)+"mA"
     print "Temp of boost converters:    "+"1-"+str(hk.temp[0])+"C 2-"+str(hk.temp[1])+"C 3-"+str(hk.temp[2])+"C batt-"+str(hk.temp[3])+"C"
-    print "External batt temp:          "+str(hk.batt_temp)+"C"
-    print "Latchups:                    "+"1-["+str(hk.latchup[0])+"] 2-["+str(hk.latchup[1])+" 3-["+str(hk.latchup[2])+"] 4-["+str(hk.latchup[3])+"] 5-["+str(hk.latchup[4])+"] 6-["+str(hk.latchup[5])+"]"
+    print "External batt temp:          "+"1-"+str(hk.batt_temp[0])+"C 2-"+str(hk.batt_temp[1])+"C"
+    print "Latchups:                    "+"1-["+str(hk.latchup[0])+"] 2-["+str(hk.latchup[1])+"] 3-["+str(hk.latchup[2])+"] 4-["+str(hk.latchup[3])+"] 5-["+str(hk.latchup[4])+"] 6-["+str(hk.latchup[5])+"]"
     print "Cause of last reset:         "+str(hk.reset)
     print "Number of reboots:           "+str(hk.bootcount)
     print "Number of software errors:   "+str(hk.sw_errors)
