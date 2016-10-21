@@ -27,6 +27,16 @@ class hkparam_t(BigEndianStructure):
                                             # MSB - [QH QS 3.3V3 3.3V2 3.3V1 5V3 5V2 5V1] - LSB
                                             # QH = Quadbat heater, QS = Quadbat switch      
     ]
+                                            # EPS reset cause can be
+                                            #   0. Unknown reset
+                                            #   1. Dedicated WDT reset
+                                            #   2. I2C WDT reset
+                                            #   3. Hard reset
+                                            #   4. Soft reset*
+                                            #   5. Stack overflow
+                                            #   6. Timer overflow
+                                            #   7. Brownout or power-on reset
+                                            #   8. Internal WDT reset
 
 class eps_hk_t(BigEndianStructure):
     _fields_ = [
@@ -251,7 +261,7 @@ class Power(object):
 
     # reads [bytes] number of bytes from the device and returns a bytearray
     def read(self, bytes):
-        (x, r) = self._pi.i2c_read_device(self._dev, bytes+2)
+        (x, r) = self._pi.i2c_read_device(self._dev, bytes+2) # first two read bytes -> [command][error code][data]
         if r[1] != 0:
             print "Command "+str(r[0])+" failed with error code "+str(r[1])
         return r[2:]
