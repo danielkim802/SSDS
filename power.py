@@ -202,7 +202,7 @@ def bytesToList(b):
 
 # prints housekeeping info given hkparam_t struct
 def displayHK(hk):
-    assert type(hk) = hkparam_t
+    assert type(hk) == hkparam_t
     print "***************-HOUSEKEEPING-***************"
     print "Photo-voltaic inputs:        "+"1-"+str(hk.pv[0])+"mV 2-"+str(hk.pv[1])+"mV 3-"+str(hk.pv[2])+"mV"
     print "Total photo current:         "+str(hk.pc)+"mA"
@@ -219,7 +219,7 @@ def displayHK(hk):
 
 # prints config info given eps_config_t struct
 def displayConfig(conf):
-    assert type(conf) = eps_config_t
+    assert type(conf) == eps_config_t
     pptmode = lambda x: "AUTO[1]" if x == 1 else "FIXED[2]" if x == 2 else "ERROR"
     battheatermode = lambda x: "MANUAL[0]" if x == 0 else "AUTO[1]" if x == 1 else "ERROR"
     print "***************-CONFIG-***************"
