@@ -231,7 +231,7 @@ def displayConfig(conf):
     print "Safe mode output value:    "+"1-["+str(conf.output_safe_value[0])+"] 2-["+str(conf.output_safe_value[1])+"] 3-["+str(conf.output_safe_value[2])+"] 4-["+str(conf.output_safe_value[3])+"] 5-["+str(conf.output_safe_value[4])+"] 6-["+str(conf.output_safe_value[5])+"] 7-["+str(conf.output_safe_value[6])+"] 8-["+str(conf.output_safe_value[7])+"]"
     print "Output initial on:         "+"1-["+str(conf.output_initial_on_delay[0])+"s] 2-["+str(conf.output_initial_on_delay[1])+"s] 3-["+str(conf.output_initial_on_delay[2])+"s] 4-["+str(conf.output_initial_on_delay[3])+"s] 5-["+str(conf.output_initial_on_delay[4])+"s] 6-["+str(conf.output_initial_on_delay[5])+"s] 7-["+str(conf.output_initial_on_delay[6])+"s] 8-["+str(conf.output_initial_on_delay[7])+"s]"
     print "Output initial off:        "+"1-["+str(conf.output_initial_off_delay[0])+"s] 2-["+str(conf.output_initial_off_delay[1])+"s] 3-["+str(conf.output_initial_off_delay[2])+"s] 4-["+str(conf.output_initial_off_delay[3])+"s] 5-["+str(conf.output_initial_off_delay[4])+"s] 6-["+str(conf.output_initial_off_delay[5])+"s] 7-["+str(conf.output_initial_off_delay[6])+"s] 8-["+str(conf.output_initial_off_delay[7])+"s]"
-    print "PPT point for boost conv:  "+"1-"+str(conf.output_initial_off_delay[0])+"mV 2-"+str(conf.output_initial_off_delay[1])+"mV 3-"+str(conf.output_initial_off_delay[2])+"mV"
+    print "PPT point for boost conv:  "+"1-"+str(conf.vboost[0])+"mV 2-"+str(conf.vboost[1])+"mV 3-"+str(conf.vboost[2])+"mV"
 
 
 #----------------------------------------------POWER
