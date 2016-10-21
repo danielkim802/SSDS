@@ -27,6 +27,16 @@ class hkparam_t(BigEndianStructure):
                                             # MSB - [QH QS 3.3V3 3.3V2 3.3V1 5V3 5V2 5V1] - LSB
                                             # QH = Quadbat heater, QS = Quadbat switch      
     ]
+                                            # EPS reset cause can be
+                                            #   0. Unknown reset
+                                            #   1. Dedicated WDT reset
+                                            #   2. I2C WDT reset
+                                            #   3. Hard reset
+                                            #   4. Soft reset*
+                                            #   5. Stack overflow
+                                            #   6. Timer overflow
+                                            #   7. Brownout or power-on reset
+                                            #   8. Internal WDT reset
 
 class eps_hk_t(BigEndianStructure):
     _fields_ = [
@@ -190,9 +200,25 @@ def bytesToList(b):
         acc += [n]
     return acc
 
+# prints housekeeping info given hkparam_t object
+def displayHK(hk):
+    print "***************-HOUSEKEEPING-***************"
+    print "Photo-voltaic inputs:        "+"1-"+str(hk.pv[0])+"mV 2-"+str(hk.pv[1])+"mV 3-"+str(hk.pv[2])+"mV"
+    print "Total photo current:         "+str(hk.pc)+"mA"
+    print "Battery voltage:             "+str(hk.bv)+"mV"
+    print "Total system current:        "+str(hk.sc)+"mA"
+    print "Temp of boost converters:    "+"1-"+str(hk.temp[0])+"C 2-"+str(hk.temp[1])+"C 3-"+str(hk.temp[2])+"C batt-"+str(hk.temp[4])+"C"
+    print "External batt temp:          "+str(hk.batt_temp)+"C"
+    print "Latchups:                    "+"1-["+str(hk.latchup[0])+"] 2-["+str(hk.latchup[1])+" 3-["+str(hk.latchup[2])+"] 4-["+str(hk.latchup[3])+"] 5-["+str(hk.latchup[4])+"] 6-["+str(hk.latchup[5])+"]"
+    print "Cause of last reset:         "+str(hk.reset)
+    print "Number of reboots:           "+str(hk.bootcount)
+    print "Number of software errors:   "+str(hk.sw_errors)
+    print "PPT mode:                    "+str(hk.ppt_mode)
+    print "Channel output:              "+str(bin(hk.channel_status))[2:]
+
 #----------------------------------------------POWER
 # device address
-POWER_ADDRESS           = 0x02  # replace with actual address
+POWER_ADDRESS           = 0x02
 
 # command registers
 CMD_PING                = 0x01
@@ -235,7 +261,7 @@ class Power(object):
 
     # reads [bytes] number of bytes from the device and returns a bytearray
     def read(self, bytes):
-        (x, r) = self._pi.i2c_read_device(self._dev, bytes+2)
+        (x, r) = self._pi.i2c_read_device(self._dev, bytes+2) # first two read bytes -> [command][error code][data]
         if r[1] != 0:
             print "Command "+str(r[0])+" failed with error code "+str(r[1])
         return r[2:]
