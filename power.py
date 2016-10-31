@@ -371,6 +371,10 @@ class Power(object):
         self.write(CMD_SET_HEATER, [command, heater, mode])
         return self.read(2)
 
+    def get_heater(self):
+        self.write(CMD_SET_HEATER, [])
+        return self.read(2)
+
     # resets the boot counter and WDT counters.
     def reset_counters(self):
         self.write(CMD_RESET_COUNTERS, [0x42])
