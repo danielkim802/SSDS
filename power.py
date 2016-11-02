@@ -254,7 +254,7 @@ def displayConfig2(conf):
     assert type(conf) == eps_config2_t
     B = lambda x: BColor.BOLD+x+Color.ENDC
     G = lambda x: Color.GREEN+x+Color.ENDC
-    print Color.GREEN+"***************-CONFIG2-***************")
+    print G("***************-CONFIG2-***************")
     print B("Batt Max Voltage:        ")+str(conf.batt_maxvoltage)+"mV"
     print B("Batt Safe Voltage:       ")+str(conf.batt_safevoltage)+"mV"
     print B("Batt Critical Voltage:   ")+str(conf.batt_criticalvoltage)+"mV"
