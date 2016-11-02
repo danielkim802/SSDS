@@ -212,12 +212,32 @@ def bytesToList(b):
         acc += [n]
     return acc
 
+# EPS reset cause can be
+                                            #   0. Unknown reset
+                                            #   1. Dedicated WDT reset
+                                            #   2. I2C WDT reset
+                                            #   3. Hard reset
+                                            #   4. Soft reset*
+                                            #   5. Stack overflow
+                                            #   6. Timer overflow
+                                            #   7. Brownout or power-on reset
+                                            #   8. Internal WDT reset
+
 # prints housekeeping info given hkparam_t struct
 def displayHK(hk):
     assert type(hk) == hkparam_t
     B = lambda x: Color.BOLD+x+Color.ENDC
     G = lambda x: Color.GREEN+x+Color.ENDC
     R = lambda x: Color.RED+x+Color.ENDC
+    RES = lambda x: "Unknown reset"              if x == 0 else
+                    "Dedicated WDT reset"        if x == 1 else
+                    "I2C WDT reset"              if x == 2 else
+                    "Hard reset"                 if x == 3 else
+                    "Soft reset"                 if x == 4 else
+                    "Stack overflow"             if x == 5 else
+                    "Timer overflow"             if x == 6 else
+                    "Brownout or power-on reset" if x == 7 else
+                    "Internal WDT reset"         if x == 8 else "ERROR"
     print B("***************-HOUSEKEEPING-***************")
     print G("Photo-voltaic inputs:        ")+"1-"+str(hk.pv[0])+R("mV")+" 2-"+str(hk.pv[1])+R("mV")+" 3-"+str(hk.pv[2])+R("mV")
     print G("Total photo current:         ")+str(hk.pc)+R("mA")
@@ -226,7 +246,7 @@ def displayHK(hk):
     print G("Temp of boost converters:    ")+"1-"+str(hk.temp[0])+R("degC")+" 2-"+str(hk.temp[1])+R("degC")+" 3-"+str(hk.temp[2])+R("degC")+" batt-"+str(hk.temp[3])+R("degC")
     print G("External batt temp:          ")+"1-"+str(hk.batt_temp[0])+R("degC")+" 2-"+str(hk.batt_temp[1])+R("degC")
     print G("Latchups:                    ")+"1-["+str(hk.latchup[0])+"] 2-["+str(hk.latchup[1])+"] 3-["+str(hk.latchup[2])+"] 4-["+str(hk.latchup[3])+"] 5-["+str(hk.latchup[4])+"] 6-["+str(hk.latchup[5])+"]"
-    print G("Cause of last reset:         ")+str(hk.reset)
+    print G("Cause of last reset:         ")+RES(hk.reset)
     print G("Number of reboots:           ")+str(hk.bootcount)
     print G("Number of software errors:   ")+str(hk.sw_errors)
     print G("PPT mode:                    ")+str(hk.ppt_mode)
@@ -247,8 +267,8 @@ def displayConfig(conf):
     print G("Battheater high:           ")+str(conf.battheater_high)+R("degC")
     print G("Nominal mode output value: ")+"1-["+str(conf.output_normal_value[0])+"] 2-["+str(conf.output_normal_value[1])+"] 3-["+str(conf.output_normal_value[2])+"] 4-["+str(conf.output_normal_value[3])+"] 5-["+str(conf.output_normal_value[4])+"] 6-["+str(conf.output_normal_value[5])+"] 7-["+str(conf.output_normal_value[6])+"] 8-["+str(conf.output_normal_value[7])+"]"
     print G("Safe mode output value:    ")+"1-["+str(conf.output_safe_value[0])+"] 2-["+str(conf.output_safe_value[1])+"] 3-["+str(conf.output_safe_value[2])+"] 4-["+str(conf.output_safe_value[3])+"] 5-["+str(conf.output_safe_value[4])+"] 6-["+str(conf.output_safe_value[5])+"] 7-["+str(conf.output_safe_value[6])+"] 8-["+str(conf.output_safe_value[7])+"]"
-    print G("Output initial on:         ")+"1-["+str(conf.output_initial_on_delay[0])+R("s]")+" 2-["+str(conf.output_initial_on_delay[1])+R("s]")+" 3-["+str(conf.output_initial_on_delay[2])+R("s]")+" 4-["+str(conf.output_initial_on_delay[3])+R("s]")+" 5-["+str(conf.output_initial_on_delay[4])+R("s]")+" 6-["+str(conf.output_initial_on_delay[5])+R("s]")+" 7-["+str(conf.output_initial_on_delay[6])+R("s]")+" 8-["+str(conf.output_initial_on_delay[7])+R("s]")
-    print G("Output initial off:        ")+"1-["+str(conf.output_initial_off_delay[0])+R("s]")+" 2-["+str(conf.output_initial_off_delay[1])+R("s]")+" 3-["+str(conf.output_initial_off_delay[2])+R("s]")+" 4-["+str(conf.output_initial_off_delay[3])+R("s]")+" 5-["+str(conf.output_initial_off_delay[4])+R("s]")+" 6-["+str(conf.output_initial_off_delay[5])+R("s]")+" 7-["+str(conf.output_initial_off_delay[6])+R("s]")+" 8-["+str(conf.output_initial_off_delay[7])+R("s]")
+    print G("Output initial on:         ")+"1-["+str(conf.output_initial_on_delay[0])+R("s")+"] 2-["+str(conf.output_initial_on_delay[1])+R("s")+"] 3-["+str(conf.output_initial_on_delay[2])+R("s")+"] 4-["+str(conf.output_initial_on_delay[3])+R("s")+"] 5-["+str(conf.output_initial_on_delay[4])+R("s")+"] 6-["+str(conf.output_initial_on_delay[5])+R("s")+"] 7-["+str(conf.output_initial_on_delay[6])+R("s")+"] 8-["+str(conf.output_initial_on_delay[7])+R("s")+"]"
+    print G("Output initial off:        ")+"1-["+str(conf.output_initial_off_delay[0])+R("s")+"] 2-["+str(conf.output_initial_off_delay[1])+R("s")+"] 3-["+str(conf.output_initial_off_delay[2])+R("s")+"] 4-["+str(conf.output_initial_off_delay[3])+R("s")+"] 5-["+str(conf.output_initial_off_delay[4])+R("s")+"] 6-["+str(conf.output_initial_off_delay[5])+R("s")+"] 7-["+str(conf.output_initial_off_delay[6])+R("s")+"] 8-["+str(conf.output_initial_off_delay[7])+R("s")+"]"
     print G("PPT point for boost conv:  ")+"1-"+str(conf.vboost[0])+R("mV")+" 2-"+str(conf.vboost[1])+R("mV")+" 3-"+str(conf.vboost[2])+R("mV")
 
 #prints config2 info given eps_config2_t struct
