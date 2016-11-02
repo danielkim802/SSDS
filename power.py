@@ -398,6 +398,7 @@ class Power(object):
         assert type(struct) == eps_config_t
         array = bytesToList(c_structToBytes(struct))
         self.write(CMD_CONFIG_SET, array)
+        return c_bytesToStruct(self.read(SIZE_ESP_CONFIG_T), "eps_config_t")
 
     # Send this command to perform a hard reset of the P31,
     # including cycling permanent 5V and 3.3V and battery outputs.
@@ -421,4 +422,5 @@ class Power(object):
         assert type(struct) == eps_config2_t
         array = bytesToList(c_structToBytes(struct))
         self.write(CMD_CONFIG2_SET, array)
+        return c_bytesToStruct(self.read(SIZE_ESP_CONFIG2_T), "eps_config2_t")
 
