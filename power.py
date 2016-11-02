@@ -217,48 +217,51 @@ def displayHK(hk):
     assert type(hk) == hkparam_t
     B = lambda x: Color.BOLD+x+Color.ENDC
     G = lambda x: Color.GREEN+x+Color.ENDC
-    print G("***************-HOUSEKEEPING-***************")
-    print B("Photo-voltaic inputs:        ")+"1-"+str(hk.pv[0])+"mV 2-"+str(hk.pv[1])+"mV 3-"+str(hk.pv[2])+"mV"
-    print B("Total photo current:         ")+str(hk.pc)+"mA"
-    print B("Battery voltage:             ")+str(hk.bv)+"mV"
-    print B("Total system current:        ")+str(hk.sc)+"mA"
-    print B("Temp of boost converters:    ")+"1-"+str(hk.temp[0])+"degC 2-"+str(hk.temp[1])+"degC 3-"+str(hk.temp[2])+"degC batt-"+str(hk.temp[3])+"degC"
-    print B("External batt temp:          ")+"1-"+str(hk.batt_temp[0])+"degC 2-"+str(hk.batt_temp[1])+"degC"
-    print B("Latchups:                    ")+"1-["+str(hk.latchup[0])+"] 2-["+str(hk.latchup[1])+"] 3-["+str(hk.latchup[2])+"] 4-["+str(hk.latchup[3])+"] 5-["+str(hk.latchup[4])+"] 6-["+str(hk.latchup[5])+"]"
-    print B("Cause of last reset:         ")+str(hk.reset)
-    print B("Number of reboots:           ")+str(hk.bootcount)
-    print B("Number of software errors:   ")+str(hk.sw_errors)
-    print B("PPT mode:                    ")+str(hk.ppt_mode)
-    print B("Channel output:              ")+str(bin(hk.channel_status))[2:]
+    R = lambda x: Color.RED+x+Color.ENDC
+    print B("***************-HOUSEKEEPING-***************")
+    print G("Photo-voltaic inputs:        ")+"1-"+str(hk.pv[0])+R("mV")+" 2-"+str(hk.pv[1])+R("mV")+" 3-"+str(hk.pv[2])+R("mV")
+    print G("Total photo current:         ")+str(hk.pc)+R("mA")
+    print G("Battery voltage:             ")+str(hk.bv)+R("mV")
+    print G("Total system current:        ")+str(hk.sc)+R("mA")
+    print G("Temp of boost converters:    ")+"1-"+str(hk.temp[0])+R("degC")+" 2-"+str(hk.temp[1])+R("degC")+" 3-"+str(hk.temp[2])+R("degC")+" batt-"+str(hk.temp[3])+R("degC")
+    print G("External batt temp:          ")+"1-"+str(hk.batt_temp[0])+R("degC")+" 2-"+str(hk.batt_temp[1])+R("degC")
+    print G("Latchups:                    ")+"1-["+str(hk.latchup[0])+"] 2-["+str(hk.latchup[1])+"] 3-["+str(hk.latchup[2])+"] 4-["+str(hk.latchup[3])+"] 5-["+str(hk.latchup[4])+"] 6-["+str(hk.latchup[5])+"]"
+    print G("Cause of last reset:         ")+str(hk.reset)
+    print G("Number of reboots:           ")+str(hk.bootcount)
+    print G("Number of software errors:   ")+str(hk.sw_errors)
+    print G("PPT mode:                    ")+str(hk.ppt_mode)
+    print G("Channel output:              ")+str(bin(hk.channel_status))[2:]
 
 # prints config info given eps_config_t struct
 def displayConfig(conf):
     assert type(conf) == eps_config_t
     pptmode = lambda x: "AUTO[1]" if x == 1 else "FIXED[2]" if x == 2 else "ERROR"
     battheatermode = lambda x: "MANUAL[0]" if x == 0 else "AUTO[1]" if x == 1 else "ERROR"
-    B = lambda x: BColor.BOLD+x+Color.ENDC
+    B = lambda x: Color.BOLD+x+Color.ENDC
     G = lambda x: Color.GREEN+x+Color.ENDC
-    print G("***************-CONFIG-***************")
-    print B("PPT mode:                  ")+pptmode(conf.ppt_mode)
-    print B("Battheater mode:           ")+battheatermode(conf.battheater_mode)
-    print B("Battheater low:            ")+str(conf.battheater_low)+"degC"
-    print B("Battheater high:           ")+str(conf.battheater_high)+"degC"
-    print B("Nominal mode output value: ")+"1-["+str(conf.output_normal_value[0])+"] 2-["+str(conf.output_normal_value[1])+"] 3-["+str(conf.output_normal_value[2])+"] 4-["+str(conf.output_normal_value[3])+"] 5-["+str(conf.output_normal_value[4])+"] 6-["+str(conf.output_normal_value[5])+"] 7-["+str(conf.output_normal_value[6])+"] 8-["+str(conf.output_normal_value[7])+"]"
-    print B("Safe mode output value:    ")+"1-["+str(conf.output_safe_value[0])+"] 2-["+str(conf.output_safe_value[1])+"] 3-["+str(conf.output_safe_value[2])+"] 4-["+str(conf.output_safe_value[3])+"] 5-["+str(conf.output_safe_value[4])+"] 6-["+str(conf.output_safe_value[5])+"] 7-["+str(conf.output_safe_value[6])+"] 8-["+str(conf.output_safe_value[7])+"]"
-    print B("Output initial on:         ")+"1-["+str(conf.output_initial_on_delay[0])+"s] 2-["+str(conf.output_initial_on_delay[1])+"s] 3-["+str(conf.output_initial_on_delay[2])+"s] 4-["+str(conf.output_initial_on_delay[3])+"s] 5-["+str(conf.output_initial_on_delay[4])+"s] 6-["+str(conf.output_initial_on_delay[5])+"s] 7-["+str(conf.output_initial_on_delay[6])+"s] 8-["+str(conf.output_initial_on_delay[7])+"s]"
-    print B("Output initial off:        ")+"1-["+str(conf.output_initial_off_delay[0])+"s] 2-["+str(conf.output_initial_off_delay[1])+"s] 3-["+str(conf.output_initial_off_delay[2])+"s] 4-["+str(conf.output_initial_off_delay[3])+"s] 5-["+str(conf.output_initial_off_delay[4])+"s] 6-["+str(conf.output_initial_off_delay[5])+"s] 7-["+str(conf.output_initial_off_delay[6])+"s] 8-["+str(conf.output_initial_off_delay[7])+"s]"
-    print B("PPT point for boost conv:  ")+"1-"+str(conf.vboost[0])+"mV 2-"+str(conf.vboost[1])+"mV 3-"+str(conf.vboost[2])+"mV"
+    R = lambda x: Color.RED+x+Color.ENDC
+    print B("***************-CONFIG-***************")
+    print G("PPT mode:                  ")+pptmode(conf.ppt_mode)
+    print G("Battheater mode:           ")+battheatermode(conf.battheater_mode)
+    print G("Battheater low:            ")+str(conf.battheater_low)+R("degC")
+    print G("Battheater high:           ")+str(conf.battheater_high)+R("degC")
+    print G("Nominal mode output value: ")+"1-["+str(conf.output_normal_value[0])+"] 2-["+str(conf.output_normal_value[1])+"] 3-["+str(conf.output_normal_value[2])+"] 4-["+str(conf.output_normal_value[3])+"] 5-["+str(conf.output_normal_value[4])+"] 6-["+str(conf.output_normal_value[5])+"] 7-["+str(conf.output_normal_value[6])+"] 8-["+str(conf.output_normal_value[7])+"]"
+    print G("Safe mode output value:    ")+"1-["+str(conf.output_safe_value[0])+"] 2-["+str(conf.output_safe_value[1])+"] 3-["+str(conf.output_safe_value[2])+"] 4-["+str(conf.output_safe_value[3])+"] 5-["+str(conf.output_safe_value[4])+"] 6-["+str(conf.output_safe_value[5])+"] 7-["+str(conf.output_safe_value[6])+"] 8-["+str(conf.output_safe_value[7])+"]"
+    print G("Output initial on:         ")+"1-["+str(conf.output_initial_on_delay[0])+R("s]")+" 2-["+str(conf.output_initial_on_delay[1])+R("s]")+" 3-["+str(conf.output_initial_on_delay[2])+R("s]")+" 4-["+str(conf.output_initial_on_delay[3])+R("s]")+" 5-["+str(conf.output_initial_on_delay[4])+R("s]")+" 6-["+str(conf.output_initial_on_delay[5])+R("s]")+" 7-["+str(conf.output_initial_on_delay[6])+R("s]")+" 8-["+str(conf.output_initial_on_delay[7])+R("s]")
+    print G("Output initial off:        ")+"1-["+str(conf.output_initial_off_delay[0])+R("s]")+" 2-["+str(conf.output_initial_off_delay[1])+R("s]")+" 3-["+str(conf.output_initial_off_delay[2])+R("s]")+" 4-["+str(conf.output_initial_off_delay[3])+R("s]")+" 5-["+str(conf.output_initial_off_delay[4])+R("s]")+" 6-["+str(conf.output_initial_off_delay[5])+R("s]")+" 7-["+str(conf.output_initial_off_delay[6])+R("s]")+" 8-["+str(conf.output_initial_off_delay[7])+R("s]")
+    print G("PPT point for boost conv:  ")+"1-"+str(conf.vboost[0])+R("mV")+" 2-"+str(conf.vboost[1])+R("mV")+" 3-"+str(conf.vboost[2])+R("mV")
 
 #prints config2 info given eps_config2_t struct
 def displayConfig2(conf):
     assert type(conf) == eps_config2_t
-    B = lambda x: BColor.BOLD+x+Color.ENDC
+    B = lambda x: Color.BOLD+x+Color.ENDC
     G = lambda x: Color.GREEN+x+Color.ENDC
-    print G("***************-CONFIG2-***************")
-    print B("Batt Max Voltage:        ")+str(conf.batt_maxvoltage)+"mV"
-    print B("Batt Safe Voltage:       ")+str(conf.batt_safevoltage)+"mV"
-    print B("Batt Critical Voltage:   ")+str(conf.batt_criticalvoltage)+"mV"
-    print B("Batt Normal Voltage:     ")+str(conf.batt_normalvoltage)+"mV"
+    R = lambda x: Color.RED+x+Color.ENDC
+    print B("***************-CONFIG2-***************")
+    print G("Batt Max Voltage:        ")+str(conf.batt_maxvoltage)+R("mV")
+    print G("Batt Safe Voltage:       ")+str(conf.batt_safevoltage)+R("mV")
+    print G("Batt Critical Voltage:   ")+str(conf.batt_criticalvoltage)+R("mV")
+    print G("Batt Normal Voltage:     ")+str(conf.batt_normalvoltage)+R("mV")
 
 
 #----------------------------------------------POWER
