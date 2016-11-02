@@ -1,6 +1,18 @@
 from ctypes import *
 from pigpio import *
 
+class Color:
+    HEADER = '\033[95m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    GRAY = '\033[90m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 class TestingStruct(BigEndianStructure):
     _fields_ = [
         ("field1", c_uint8),
@@ -203,35 +215,50 @@ def bytesToList(b):
 # prints housekeeping info given hkparam_t struct
 def displayHK(hk):
     assert type(hk) == hkparam_t
-    print "***************-HOUSEKEEPING-***************"
-    print "Photo-voltaic inputs:        "+"1-"+str(hk.pv[0])+"mV 2-"+str(hk.pv[1])+"mV 3-"+str(hk.pv[2])+"mV"
-    print "Total photo current:         "+str(hk.pc)+"mA"
-    print "Battery voltage:             "+str(hk.bv)+"mV"
-    print "Total system current:        "+str(hk.sc)+"mA"
-    print "Temp of boost converters:    "+"1-"+str(hk.temp[0])+"degC 2-"+str(hk.temp[1])+"degC 3-"+str(hk.temp[2])+"degC batt-"+str(hk.temp[3])+"degC"
-    print "External batt temp:          "+"1-"+str(hk.batt_temp[0])+"degC 2-"+str(hk.batt_temp[1])+"degC"
-    print "Latchups:                    "+"1-["+str(hk.latchup[0])+"] 2-["+str(hk.latchup[1])+"] 3-["+str(hk.latchup[2])+"] 4-["+str(hk.latchup[3])+"] 5-["+str(hk.latchup[4])+"] 6-["+str(hk.latchup[5])+"]"
-    print "Cause of last reset:         "+str(hk.reset)
-    print "Number of reboots:           "+str(hk.bootcount)
-    print "Number of software errors:   "+str(hk.sw_errors)
-    print "PPT mode:                    "+str(hk.ppt_mode)
-    print "Channel output:              "+str(bin(hk.channel_status))[2:]
+    B = lambda x: Color.BOLD+x+Color.ENDC
+    G = lambda x: Color.GREEN+x+Color.ENDC
+    print G("***************-HOUSEKEEPING-***************")
+    print B("Photo-voltaic inputs:        ")+"1-"+str(hk.pv[0])+"mV 2-"+str(hk.pv[1])+"mV 3-"+str(hk.pv[2])+"mV"
+    print B("Total photo current:         ")+str(hk.pc)+"mA"
+    print B("Battery voltage:             ")+str(hk.bv)+"mV"
+    print B("Total system current:        ")+str(hk.sc)+"mA"
+    print B("Temp of boost converters:    ")+"1-"+str(hk.temp[0])+"degC 2-"+str(hk.temp[1])+"degC 3-"+str(hk.temp[2])+"degC batt-"+str(hk.temp[3])+"degC"
+    print B("External batt temp:          ")+"1-"+str(hk.batt_temp[0])+"degC 2-"+str(hk.batt_temp[1])+"degC"
+    print B("Latchups:                    ")+"1-["+str(hk.latchup[0])+"] 2-["+str(hk.latchup[1])+"] 3-["+str(hk.latchup[2])+"] 4-["+str(hk.latchup[3])+"] 5-["+str(hk.latchup[4])+"] 6-["+str(hk.latchup[5])+"]"
+    print B("Cause of last reset:         ")+str(hk.reset)
+    print B("Number of reboots:           ")+str(hk.bootcount)
+    print B("Number of software errors:   ")+str(hk.sw_errors)
+    print B("PPT mode:                    ")+str(hk.ppt_mode)
+    print B("Channel output:              ")+str(bin(hk.channel_status))[2:]
 
 # prints config info given eps_config_t struct
 def displayConfig(conf):
     assert type(conf) == eps_config_t
     pptmode = lambda x: "AUTO[1]" if x == 1 else "FIXED[2]" if x == 2 else "ERROR"
     battheatermode = lambda x: "MANUAL[0]" if x == 0 else "AUTO[1]" if x == 1 else "ERROR"
-    print "***************-CONFIG-***************"
-    print "PPT mode:                  "+pptmode(conf.ppt_mode)
-    print "Battheater mode:           "+battheatermode(conf.battheater_mode)
-    print "Battheater low:            "+str(conf.battheater_low)+"degC"
-    print "Battheater high:           "+str(conf.battheater_high)+"degC"
-    print "Nominal mode output value: "+"1-["+str(conf.output_normal_value[0])+"] 2-["+str(conf.output_normal_value[1])+"] 3-["+str(conf.output_normal_value[2])+"] 4-["+str(conf.output_normal_value[3])+"] 5-["+str(conf.output_normal_value[4])+"] 6-["+str(conf.output_normal_value[5])+"] 7-["+str(conf.output_normal_value[6])+"] 8-["+str(conf.output_normal_value[7])+"]"
-    print "Safe mode output value:    "+"1-["+str(conf.output_safe_value[0])+"] 2-["+str(conf.output_safe_value[1])+"] 3-["+str(conf.output_safe_value[2])+"] 4-["+str(conf.output_safe_value[3])+"] 5-["+str(conf.output_safe_value[4])+"] 6-["+str(conf.output_safe_value[5])+"] 7-["+str(conf.output_safe_value[6])+"] 8-["+str(conf.output_safe_value[7])+"]"
-    print "Output initial on:         "+"1-["+str(conf.output_initial_on_delay[0])+"s] 2-["+str(conf.output_initial_on_delay[1])+"s] 3-["+str(conf.output_initial_on_delay[2])+"s] 4-["+str(conf.output_initial_on_delay[3])+"s] 5-["+str(conf.output_initial_on_delay[4])+"s] 6-["+str(conf.output_initial_on_delay[5])+"s] 7-["+str(conf.output_initial_on_delay[6])+"s] 8-["+str(conf.output_initial_on_delay[7])+"s]"
-    print "Output initial off:        "+"1-["+str(conf.output_initial_off_delay[0])+"s] 2-["+str(conf.output_initial_off_delay[1])+"s] 3-["+str(conf.output_initial_off_delay[2])+"s] 4-["+str(conf.output_initial_off_delay[3])+"s] 5-["+str(conf.output_initial_off_delay[4])+"s] 6-["+str(conf.output_initial_off_delay[5])+"s] 7-["+str(conf.output_initial_off_delay[6])+"s] 8-["+str(conf.output_initial_off_delay[7])+"s]"
-    print "PPT point for boost conv:  "+"1-"+str(conf.vboost[0])+"mV 2-"+str(conf.vboost[1])+"mV 3-"+str(conf.vboost[2])+"mV"
+    B = lambda x: BColor.BOLD+x+Color.ENDC
+    G = lambda x: Color.GREEN+x+Color.ENDC
+    print G("***************-CONFIG-***************")
+    print B("PPT mode:                  ")+pptmode(conf.ppt_mode)
+    print B("Battheater mode:           ")+battheatermode(conf.battheater_mode)
+    print B("Battheater low:            ")+str(conf.battheater_low)+"degC"
+    print B("Battheater high:           ")+str(conf.battheater_high)+"degC"
+    print B("Nominal mode output value: ")+"1-["+str(conf.output_normal_value[0])+"] 2-["+str(conf.output_normal_value[1])+"] 3-["+str(conf.output_normal_value[2])+"] 4-["+str(conf.output_normal_value[3])+"] 5-["+str(conf.output_normal_value[4])+"] 6-["+str(conf.output_normal_value[5])+"] 7-["+str(conf.output_normal_value[6])+"] 8-["+str(conf.output_normal_value[7])+"]"
+    print B("Safe mode output value:    ")+"1-["+str(conf.output_safe_value[0])+"] 2-["+str(conf.output_safe_value[1])+"] 3-["+str(conf.output_safe_value[2])+"] 4-["+str(conf.output_safe_value[3])+"] 5-["+str(conf.output_safe_value[4])+"] 6-["+str(conf.output_safe_value[5])+"] 7-["+str(conf.output_safe_value[6])+"] 8-["+str(conf.output_safe_value[7])+"]"
+    print B("Output initial on:         ")+"1-["+str(conf.output_initial_on_delay[0])+"s] 2-["+str(conf.output_initial_on_delay[1])+"s] 3-["+str(conf.output_initial_on_delay[2])+"s] 4-["+str(conf.output_initial_on_delay[3])+"s] 5-["+str(conf.output_initial_on_delay[4])+"s] 6-["+str(conf.output_initial_on_delay[5])+"s] 7-["+str(conf.output_initial_on_delay[6])+"s] 8-["+str(conf.output_initial_on_delay[7])+"s]"
+    print B("Output initial off:        ")+"1-["+str(conf.output_initial_off_delay[0])+"s] 2-["+str(conf.output_initial_off_delay[1])+"s] 3-["+str(conf.output_initial_off_delay[2])+"s] 4-["+str(conf.output_initial_off_delay[3])+"s] 5-["+str(conf.output_initial_off_delay[4])+"s] 6-["+str(conf.output_initial_off_delay[5])+"s] 7-["+str(conf.output_initial_off_delay[6])+"s] 8-["+str(conf.output_initial_off_delay[7])+"s]"
+    print B("PPT point for boost conv:  ")+"1-"+str(conf.vboost[0])+"mV 2-"+str(conf.vboost[1])+"mV 3-"+str(conf.vboost[2])+"mV"
+
+#prints config2 info given eps_config2_t struct
+def displayConfig2(conf):
+    assert type(conf) == eps_config2_t
+    B = lambda x: BColor.BOLD+x+Color.ENDC
+    G = lambda x: Color.GREEN+x+Color.ENDC
+    print Color.GREEN+"***************-CONFIG2-***************")
+    print B("Batt Max Voltage:        ")+str(conf.batt_maxvoltage)+"mV"
+    print B("Batt Safe Voltage:       ")+str(conf.batt_safevoltage)+"mV"
+    print B("Batt Critical Voltage:   ")+str(conf.batt_criticalvoltage)+"mV"
+    print B("Batt Normal Voltage:     ")+str(conf.batt_normalvoltage)+"mV"
 
 
 #----------------------------------------------POWER
@@ -398,7 +425,6 @@ class Power(object):
         assert type(struct) == eps_config_t
         array = bytesToList(c_structToBytes(struct))
         self.write(CMD_CONFIG_SET, array)
-        return c_bytesToStruct(self.read(SIZE_ESP_CONFIG_T), "eps_config_t")
 
     # Send this command to perform a hard reset of the P31,
     # including cycling permanent 5V and 3.3V and battery outputs.
@@ -422,5 +448,4 @@ class Power(object):
         assert type(struct) == eps_config2_t
         array = bytesToList(c_structToBytes(struct))
         self.write(CMD_CONFIG2_SET, array)
-        return c_bytesToStruct(self.read(SIZE_ESP_CONFIG2_T), "eps_config2_t")
 
