@@ -212,32 +212,13 @@ def bytesToList(b):
         acc += [n]
     return acc
 
-# EPS reset cause can be
-                                            #   0. Unknown reset
-                                            #   1. Dedicated WDT reset
-                                            #   2. I2C WDT reset
-                                            #   3. Hard reset
-                                            #   4. Soft reset*
-                                            #   5. Stack overflow
-                                            #   6. Timer overflow
-                                            #   7. Brownout or power-on reset
-                                            #   8. Internal WDT reset
-
 # prints housekeeping info given hkparam_t struct
 def displayHK(hk):
     assert type(hk) == hkparam_t
     B = lambda x: Color.BOLD+x+Color.ENDC
     G = lambda x: Color.GREEN+x+Color.ENDC
     R = lambda x: Color.RED+x+Color.ENDC
-    RES = lambda x: "Unknown reset"              if x == 0 else
-                    "Dedicated WDT reset"        if x == 1 else
-                    "I2C WDT reset"              if x == 2 else
-                    "Hard reset"                 if x == 3 else
-                    "Soft reset"                 if x == 4 else
-                    "Stack overflow"             if x == 5 else
-                    "Timer overflow"             if x == 6 else
-                    "Brownout or power-on reset" if x == 7 else
-                    "Internal WDT reset"         if x == 8 else "ERROR"
+    RES = lambda x: "Unknown reset" if x == 0 else "Dedicated WDT reset" if x == 1 else "I2C WDT reset" if x == 2 else "Hard reset" if x == 3 else "Soft reset" if x == 4 else "Stack overflow reset" if x == 5 else "Timer overflow reset" if x == 6 else "Brownout or power-on reset" if x == 7 else "Internal WDT reset" if x == 8 else "ERROR"
     print B("***************-HOUSEKEEPING-***************")
     print G("Photo-voltaic inputs:        ")+"1-"+str(hk.pv[0])+R("mV")+" 2-"+str(hk.pv[1])+R("mV")+" 3-"+str(hk.pv[2])+R("mV")
     print G("Total photo current:         ")+str(hk.pc)+R("mA")
