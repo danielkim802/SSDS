@@ -234,7 +234,7 @@ def displayHK(hk):
     print GR("Number of reboots:           ")+R(str(hk.bootcount))
     print GR("Number of software errors:   ")+R(str(hk.sw_errors))
     print GR("PPT mode:                    ")+R(str(hk.ppt_mode))
-    print GR("Channel output:              ")+R(str(bin(hk.channel_status))[2:])
+    print GR("Channel output:              ")+R("0"*(8-len(str(bin(hk.channel_status))[2:]))+str(bin(hk.channel_status))[2:])
 
 # prints config info given eps_config_t struct
 def displayConfig(conf):
