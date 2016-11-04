@@ -420,7 +420,7 @@ class Power(object):
     # Use this command to control the config system.
     # cmd [1 byte] -> cmd = 1: Restore default config
     def config_cmd(self, command):
-        self.write(CMD_CONFIG2_CMD, [command])
+        self.write(CMD_CONFIG_CMD, [command])
 
     # returns eps_config_t structure
     def config_get(self):
