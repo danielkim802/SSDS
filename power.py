@@ -252,7 +252,7 @@ def displayConfig(conf):
     print G("Output initial off:        ")+"1-["+str(conf.output_initial_off_delay[0])+R("s")+"] 2-["+str(conf.output_initial_off_delay[1])+R("s")+"] 3-["+str(conf.output_initial_off_delay[2])+R("s")+"] 4-["+str(conf.output_initial_off_delay[3])+R("s")+"] 5-["+str(conf.output_initial_off_delay[4])+R("s")+"] 6-["+str(conf.output_initial_off_delay[5])+R("s")+"] 7-["+str(conf.output_initial_off_delay[6])+R("s")+"] 8-["+str(conf.output_initial_off_delay[7])+R("s")+"]"
     print G("PPT point for boost conv:  ")+"1-"+str(conf.vboost[0])+R("mV")+" 2-"+str(conf.vboost[1])+R("mV")+" 3-"+str(conf.vboost[2])+R("mV")
 
-#prints config2 info given eps_config2_t struct
+# prints config2 info given eps_config2_t struct
 def displayConfig2(conf):
     assert type(conf) == eps_config2_t
     B = lambda x: Color.BOLD+x+Color.ENDC
@@ -306,6 +306,12 @@ class Power(object):
     def __init__(self, bus=PI_BUS, addr=POWER_ADDRESS, flags=0):
         self._pi = pi()                                     # initialize pigpio object
         self._dev = self._pi.i2c_open(bus, addr, flags)     # initialize i2c device
+
+    # prints config/config2/housekeeping
+    def displayAll(self):
+        displayHK(self.get_hk_1())
+        displayConfig(self.config_get())
+        displayConfig2(self.config2_get())
 
     # writes byte list [values] to register [cmd]
     def write(self, cmd, values):
