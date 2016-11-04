@@ -269,6 +269,9 @@ def displayConfig2(conf):
 # device address
 POWER_ADDRESS           = 0x02
 
+# raspberry pi bus number
+PI_BUS                  = 1
+
 # command registers
 CMD_PING                = 0x01
 CMD_REBOOT              = 0x04
@@ -295,12 +298,12 @@ SIZE_EPS_HK_VI_T        = 20
 SIZE_EPS_HK_OUT_T       = 64
 SIZE_EPS_HK_WDT_T       = 28
 SIZE_EPS_HK_BASIC_T     = 24
-SIZE_ESP_CONFIG_T       = 58
-SIZE_ESP_CONFIG2_T      = 20
+SIZE_EPS_CONFIG_T       = 58
+SIZE_EPS_CONFIG2_T      = 20
 
 class Power(object):
     # initializes power object with bus [bus] and device address [addr]
-    def __init__(self, bus, addr, flags=0):
+    def __init__(self, bus=PI_BUS, addr=POWER_ADDRESS, flags=0):
         self._pi = pi()                                     # initialize pigpio object
         self._dev = self._pi.i2c_open(bus, addr, flags)     # initialize i2c device
 
@@ -422,7 +425,7 @@ class Power(object):
     # returns eps_config_t structure
     def config_get(self):
         self.write(CMD_CONFIG_GET, [])
-        return c_bytesToStruct(self.read(SIZE_ESP_CONFIG_T), "eps_config_t")
+        return c_bytesToStruct(self.read(SIZE_EPS_CONFIG_T), "eps_config_t")
 
     # takes eps_config_t struct and sets configuration
     def config_set(self, struct):
@@ -444,7 +447,7 @@ class Power(object):
     # returns esp_config2_t struct
     def config2_get(self):
         self.write(CMD_CONFIG2_GET, [])
-        return c_bytesToStruct(self.read(SIZE_ESP_CONFIG2_T), "eps_config2_t")
+        return c_bytesToStruct(self.read(SIZE_EPS_CONFIG2_T), "eps_config2_t")
 
     # Use this command to send config 2 to the P31
     # and save it (remember to also confirm it)
