@@ -1,5 +1,6 @@
 from ctypes import *
 from pigpio import *
+from pipeline import *
 
 class Color:
     HEADER = '\033[95m'
@@ -222,44 +223,106 @@ GR = lambda x: Color.GRAY+x+Color.ENDC
 def displayHK(hk):
     assert type(hk) == hkparam_t
     RES = lambda x: "Unknown reset" if x == 0 else "Dedicated WDT reset" if x == 1 else "I2C WDT reset" if x == 2 else "Hard reset" if x == 3 else "Soft reset" if x == 4 else "Stack overflow reset" if x == 5 else "Timer overflow reset" if x == 6 else "Brownout or power-on reset" if x == 7 else "Internal WDT reset" if x == 8 else "ERROR"
-    print G("***************-HOUSEKEEPING-***************")
-    print GR("Photo-voltaic inputs:        ")+"1-"+R(str(hk.pv[0])+"mV")+" 2-"+R(str(hk.pv[1])+"mV")+" 3-"+R(str(hk.pv[2])+"mV")
-    print GR("Total photo current:         ")+R(str(hk.pc)+"mA")
-    print GR("Battery voltage:             ")+R(str(hk.bv)+"mV")
-    print GR("Total system current:        ")+R(str(hk.sc)+"mA")
-    print GR("Temp of boost converters:    ")+"1-"+R(str(hk.temp[0])+"degC")+" 2-"+R(str(hk.temp[1])+"degC")+" 3-"+R(str(hk.temp[2])+"degC")+" batt-"+R(str(hk.temp[3])+"degC")
-    print GR("External batt temp:          ")+"1-"+R(str(hk.batt_temp[0])+"degC")+" 2-"+R(str(hk.batt_temp[1])+"degC")
-    print GR("Latchups:                    ")+"1-["+R(str(hk.latchup[0]))+"] 2-["+R(str(hk.latchup[1]))+"] 3-["+R(str(hk.latchup[2]))+"] 4-["+R(str(hk.latchup[3]))+"] 5-["+R(str(hk.latchup[4]))+"] 6-["+R(str(hk.latchup[5]))+"]"
-    print GR("Cause of last reset:         ")+R(RES(hk.reset))
-    print GR("Number of reboots:           ")+R(str(hk.bootcount))
-    print GR("Number of software errors:   ")+R(str(hk.sw_errors))
-    print GR("PPT mode:                    ")+R(str(hk.ppt_mode))
-    print GR("Channel output:              ")+R("0"*(8-len(str(bin(hk.channel_status))[2:]))+str(bin(hk.channel_status))[2:])
+    mv = lambda x: x+"mV"
+    ma = lambda x: x+"mA"
+    degc = lambda x: x+"degC"
+    mult = lambda x: lambda y: x*y
+    add = lambda x: lambda y: x+y
+    substr = lambda x: lambda y: y[x:]
+    print "***************-HOUSEKEEPING-***************" |PL| G
+    print GR("Photo-voltaic inputs:        ")+"1-%s 2-%s 3-%s" %                                (hk.pv[0] |PL| str |PL| mv |PL| R, 
+                                                                                                 hk.pv[1] |PL| str |PL| mv |PL| R, 
+                                                                                                 hk.pv[2] |PL| str |PL| mv |PL| R)
+
+    print GR("Total photo current:         ")+"%s" %                                            (hk.pc |PL| str |PL| ma |PL| R)
+    print GR("Battery voltage:             ")+"%s" %                                            (hk.bv |PL| str |PL| mv |PL| R)
+    print GR("Total system current:        ")+"%s" %                                            (hk.sc |PL| str |PL| ma |PL| R)
+
+    print GR("Temp of boost converters:    ")+"1-%s 2-%s 3-%s batt-%s" %                        (hk.temp[0] |PL| str |PL| degc |PL| R,
+                                                                                                 hk.temp[1] |PL| str |PL| degc |PL| R,
+                                                                                                 hk.temp[2] |PL| str |PL| degc |PL| R,
+                                                                                                 hk.temp[3] |PL| str |PL| degc |PL| R)
+
+    print GR("External batt temp:          ")+"1-%s 2-%s" %                                     (hk.batt_temp[0] |PL| str |PL| degc |PL| R,
+                                                                                                 hk.batt_temp[0] |PL| str |PL| degc |PL| R)
+
+    print GR("Latchups:                    ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s]" %     (hk.latchup[0] |PL| str |PL| R,             
+                                                                                                 hk.latchup[1] |PL| str |PL| R,
+                                                                                                 hk.latchup[2] |PL| str |PL| R,
+                                                                                                 hk.latchup[3] |PL| str |PL| R,
+                                                                                                 hk.latchup[4] |PL| str |PL| R,
+                                                                                                 hk.latchup[5] |PL| str |PL| R)
+
+    print GR("Cause of last reset:         ")+"%s" %                                            (hk.reset |PL| RES |PL| R)
+    print GR("Number of reboots:           ")+"%s" %                                            (hk.bootcount |PL| str |PL| R)
+    print GR("Number of software errors:   ")+"%s" %                                            (hk.sw_errors |PL| str |PL| R)
+    print GR("PPT mode:                    ")+"%s" %                                            (hk.ppt_mode |PL| str |PL| R)
+    print GR("Channel output:              ")+"%s" %                                            ((hk.channel_status |PL| bin |PL| substr(2) |PL| len |PL| mult(-1) |PL| add(8) |PL| mult("0"))+(hk.channel_status |PL| bin |PL| str |PL| substr(2))) |PL| R
+                                                                                                 
 
 # prints config info given eps_config_t struct
 def displayConfig(conf):
     assert type(conf) == eps_config_t
     pptmode = lambda x: "AUTO[1]" if x == 1 else "FIXED[2]" if x == 2 else "ERROR"
     battheatermode = lambda x: "MANUAL[0]" if x == 0 else "AUTO[1]" if x == 1 else "ERROR"
-    print G("***************-CONFIG-***************")
-    print GR("PPT mode:                  ")+R(pptmode(conf.ppt_mode))
-    print GR("Battheater mode:           ")+R(battheatermode(conf.battheater_mode))
-    print GR("Battheater low:            ")+R(str(conf.battheater_low)+"degC")
-    print GR("Battheater high:           ")+R(str(conf.battheater_high)+"degC")
-    print GR("Nominal mode output value: ")+"1-["+R(str(conf.output_normal_value[0]))+"] 2-["+R(str(conf.output_normal_value[1]))+"] 3-["+R(str(conf.output_normal_value[2]))+"] 4-["+R(str(conf.output_normal_value[3]))+"] 5-["+R(str(conf.output_normal_value[4]))+"] 6-["+R(str(conf.output_normal_value[5]))+"] 7-["+R(str(conf.output_normal_value[6]))+"] 8-["+R(str(conf.output_normal_value[7]))+"]"
-    print GR("Safe mode output value:    ")+"1-["+R(str(conf.output_safe_value[0]))+"] 2-["+R(str(conf.output_safe_value[1]))+"] 3-["+R(str(conf.output_safe_value[2]))+"] 4-["+R(str(conf.output_safe_value[3]))+"] 5-["+R(str(conf.output_safe_value[4]))+"] 6-["+R(str(conf.output_safe_value[5]))+"] 7-["+R(str(conf.output_safe_value[6]))+"] 8-["+R(str(conf.output_safe_value[7]))+"]"
-    print GR("Output initial on:         ")+"1-["+R(str(conf.output_initial_on_delay[0]))+R("s")+"] 2-["+R(str(conf.output_initial_on_delay[1]))+R("s")+"] 3-["+R(str(conf.output_initial_on_delay[2]))+R("s")+"] 4-["+R(str(conf.output_initial_on_delay[3]))+R("s")+"] 5-["+R(str(conf.output_initial_on_delay[4]))+R("s")+"] 6-["+R(str(conf.output_initial_on_delay[5]))+R("s")+"] 7-["+R(str(conf.output_initial_on_delay[6]))+R("s")+"] 8-["+R(str(conf.output_initial_on_delay[7]))+R("s")+"]"
-    print GR("Output initial off:        ")+"1-["+R(str(conf.output_initial_off_delay[0]))+R("s")+"] 2-["+R(str(conf.output_initial_off_delay[1]))+R("s")+"] 3-["+R(str(conf.output_initial_off_delay[2]))+R("s")+"] 4-["+R(str(conf.output_initial_off_delay[3]))+R("s")+"] 5-["+R(str(conf.output_initial_off_delay[4]))+R("s")+"] 6-["+R(str(conf.output_initial_off_delay[5]))+R("s")+"] 7-["+R(str(conf.output_initial_off_delay[6]))+R("s")+"] 8-["+R(str(conf.output_initial_off_delay[7]))+R("s")+"]"
-    print GR("PPT point for boost conv:  ")+"1-"+R(str(conf.vboost[0])+"mV")+" 2-"+R(str(conf.vboost[1])+"mV")+" 3-"+R(str(conf.vboost[2])+"mV")
+    mv = lambda x: x+"mV"
+    ma = lambda x: x+"mA"
+    degc = lambda x: x+"degC"
+    sec = lambda x: x+"s"
+    print "***************-CONFIG-***************" |PL| G
+    print GR("PPT mode:                  ")+"%s" %                                                      (conf.ppt_mode |PL| pptmode |PL| R)
+    print GR("Battheater mode:           ")+"%s" %                                                      (conf.battheater_mode |PL| battheatermode |PL| R)
+    print GR("Battheater low:            ")+"%s" %                                                      (conf.battheater_low |PL| str |PL| degc |PL| R)
+    print GR("Battheater high:           ")+"%s" %                                                      (conf.battheater_high |PL| str |PL| degc |PL| R)
+
+    print GR("Nominal mode output value: ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s] 7-[%s] 8-[%s]" % (conf.output_normal_value[0] |PL| str |PL| R,
+                                                                                                         conf.output_normal_value[1] |PL| str |PL| R,
+                                                                                                         conf.output_normal_value[2] |PL| str |PL| R,
+                                                                                                         conf.output_normal_value[3] |PL| str |PL| R, 
+                                                                                                         conf.output_normal_value[4] |PL| str |PL| R,
+                                                                                                         conf.output_normal_value[5] |PL| str |PL| R,
+                                                                                                         conf.output_normal_value[6] |PL| str |PL| R,
+                                                                                                         conf.output_normal_value[7] |PL| str |PL| R)
+
+    print GR("Safe mode output value:    ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s] 7-[%s] 8-[%s]" % (conf.output_safe_value[0] |PL| str |PL| R,
+                                                                                                         conf.output_safe_value[1] |PL| str |PL| R,
+                                                                                                         conf.output_safe_value[2] |PL| str |PL| R,
+                                                                                                         conf.output_safe_value[3] |PL| str |PL| R, 
+                                                                                                         conf.output_safe_value[4] |PL| str |PL| R,
+                                                                                                         conf.output_safe_value[5] |PL| str |PL| R,
+                                                                                                         conf.output_safe_value[6] |PL| str |PL| R,
+                                                                                                         conf.output_safe_value[7] |PL| str |PL| R)
+
+    print GR("Output initial on:         ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s] 7-[%s] 8-[%s]" % (conf.output_initial_on_delay[0] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_on_delay[1] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_on_delay[2] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_on_delay[3] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_on_delay[4] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_on_delay[5] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_on_delay[6] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_on_delay[7] |PL| str |PL| sec |PL| R)
+
+    print GR("Output initial off:        ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s] 7-[%s] 8-[%s]" % (conf.output_initial_off_delay[0] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_off_delay[1] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_off_delay[2] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_off_delay[3] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_off_delay[4] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_off_delay[5] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_off_delay[6] |PL| str |PL| sec |PL| R,
+                                                                                                         conf.output_initial_off_delay[7] |PL| str |PL| sec |PL| R)
+
+    print GR("PPT point for boost conv:  ")+"1-%s 2-%s 3-%s" %                                          (conf.vboost[0] |PL| str |PL| mv |PL| R,
+                                                                                                         conf.vboost[1] |PL| str |PL| mv |PL| R,
+                                                                                                         conf.vboost[2] |PL| str |PL| mv |PL| R)
 
 # prints config2 info given eps_config2_t struct
 def displayConfig2(conf):
     assert type(conf) == eps_config2_t
     print G("***************-CONFIG2-***************")
-    print GR("Batt Max Voltage:        ")+R(str(conf.batt_maxvoltage)+"mV")
-    print GR("Batt Safe Voltage:       ")+R(str(conf.batt_safevoltage)+"mV")
-    print GR("Batt Critical Voltage:   ")+R(str(conf.batt_criticalvoltage)+"mV")
-    print GR("Batt Normal Voltage:     ")+R(str(conf.batt_normalvoltage)+"mV")
+    print GR("Batt Max Voltage:        ")+"%s" % (conf.batt_maxvoltage |PL| str |PL| mv |PL| R)
+    print GR("Batt Safe Voltage:       ")+"%s" % (conf.batt_safevoltage |PL| str |PL| mv |PL| R)
+    print GR("Batt Critical Voltage:   ")+"%s" % (conf.batt_criticalvoltage |PL| str |PL| mv |PL| R)
+    print GR("Batt Normal Voltage:     ")+"%s" % (conf.batt_normalvoltage |PL| str |PL| mv |PL| R)
 
 
 #----------------------------------------------POWER
@@ -318,7 +381,7 @@ class Power(object):
     def read(self, bytes):
         (x, r) = self._pi.i2c_read_device(self._dev, bytes+2) # first two read bytes -> [command][error code][data]
         if r[1] != 0:
-            print "Command "+str(r[0])+" failed with error code "+str(r[1])
+            print "Command %i failed with error code %i" % (r[0], r[1])
         return r[2:]
 
     # pings value
