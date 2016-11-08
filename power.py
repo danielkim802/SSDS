@@ -2,6 +2,8 @@ from ctypes import *
 from pigpio import *
 from pipeline import *
 
+_ = Operator(lambda x, y: y (x))
+
 class Color:
     HEADER = '\033[95m'
     BLUE = '\033[94m'

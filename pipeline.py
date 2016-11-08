@@ -48,6 +48,3 @@ class Operator(object):
 	def __gt__(self, other):
 		return self.function(other)
 
-PL = Operator(lambda x, y: y (x))
-_ = PL
-AD = Operator(lambda x, y: x+y)
