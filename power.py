@@ -318,7 +318,8 @@ def displayConfig(conf):
 # prints config2 info given eps_config2_t struct
 def displayConfig2(conf):
     assert type(conf) == eps_config2_t
-    print G("***************-CONFIG2-***************")
+    mv = lambda x: x+"mV"
+    print "***************-CONFIG2-***************" |PL| G
     print GR("Batt Max Voltage:        ")+"%s" % (conf.batt_maxvoltage |PL| str |PL| mv |PL| R)
     print GR("Batt Safe Voltage:       ")+"%s" % (conf.batt_safevoltage |PL| str |PL| mv |PL| R)
     print GR("Batt Critical Voltage:   ")+"%s" % (conf.batt_criticalvoltage |PL| str |PL| mv |PL| R)

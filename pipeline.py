@@ -34,7 +34,21 @@ class Operator(object):
 	def __or__(self, other):
 		return self.function(other)
 
+	def __radd__(self, other):
+		return Operator(lambda x: self.function(other, x))
+
+	def __add__(self, other):
+		return self.function(other)
+
+	def __rmul__(self, other):
+		return Operator(lambda x: self.function(other, x))
+
+	def __mul__(self, other):
+		return self.function(other)
+
 PL = Operator(lambda x, y: y (x))
 AD = Operator(lambda x, y: x+y)
 
-print 5 |PL| str
+incr = lambda x: x+1
+double = lambda x: x*2
+append = lambda x: lambda y: y+x
