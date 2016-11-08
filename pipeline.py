@@ -17,7 +17,6 @@
 # filtints = _fun(lambda x: filter(lambda y: type(y) == int, x))
 # print [1, 2.0, 3, 4.0, 5, 6.0] >> incrall(1) >> filtints
 
-
 class Operator(object):
 	def __init__(self, funct):
 		self.function = funct
@@ -46,9 +45,9 @@ class Operator(object):
 	def __mul__(self, other):
 		return self.function(other)
 
-PL = Operator(lambda x, y: y (x))
-AD = Operator(lambda x, y: x+y)
+	def __gt__(self, other):
+		return self.function(other)
 
-incr = lambda x: x+1
-double = lambda x: x*2
-append = lambda x: lambda y: y+x
+PL = Operator(lambda x, y: y (x))
+_ = PL
+AD = Operator(lambda x, y: x+y)
