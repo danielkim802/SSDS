@@ -2,7 +2,9 @@ from ctypes import *
 from pigpio import *
 from pipeline import *
 
+# pipeline operator (>>_>> or |_|)
 _ = Operator(lambda x, y: y (x))
+PL = Operator(lambda x, y: y (x))
 
 class Color:
     HEADER = '\033[95m'
