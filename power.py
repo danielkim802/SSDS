@@ -1,8 +1,41 @@
 from ctypes import *
 from pigpio import *
-from pipeline import *
 
+# define custom infix operators
+class Operator(object):
+    def __init__(self, funct):
+        self.function = funct
+
+    def __rrshift__(self, other):
+        return Operator(lambda x: self.function(other, x))
+
+    def __rshift__(self, other):
+        return self.function(other)
+
+    def __ror__(self, other):
+        return Operator(lambda x: self.function(other, x))
+
+    def __or__(self, other):
+        return self.function(other)
+
+    def __radd__(self, other):
+        return Operator(lambda x: self.function(other, x))
+
+    def __add__(self, other):
+        return self.function(other)
+
+    def __rmul__(self, other):
+        return Operator(lambda x: self.function(other, x))
+
+    def __mul__(self, other):
+        return self.function(other)
+
+    def __gt__(self, other):
+        return self.function(other)
+
+# pipeline operator (>>_>> or |_|)
 _ = Operator(lambda x, y: y (x))
+PL = Operator(lambda x, y: y (x))
 
 class Color:
     HEADER = '\033[95m'
@@ -364,6 +397,15 @@ SIZE_EPS_HK_BASIC_T     = 24
 SIZE_EPS_CONFIG_T       = 58
 SIZE_EPS_CONFIG2_T      = 20
 
+# outputs
+OUT_0                   = 0
+OUT_1                   = 1
+OUT_2                   = 2
+OUT_3                   = 3
+OUT_4                   = 4
+OUT_ELECTROLYZER        = 5
+
+
 class Power(object):
     # initializes power object with bus [bus] and device address [addr]
     def __init__(self, bus=PI_BUS, addr=POWER_ADDRESS, flags=0):
@@ -444,7 +486,7 @@ class Power(object):
     # delay   [2 bytes] -> [seconds]
     def set_single_output(self, channel, value, delay):
         d = toBytes(delay, 2)
-        self.write(CMD_SET_SINGLE_OUTPUT, [channel, value]+[d[0], d[1]])
+        self.write(CMD_SET_SINGLE_OUTPUT, [channel, value]+list(d))
 
     # Set the voltage on the photo- voltaic inputs V1, V2, V3 in mV. 
     # Takes effect when MODE = 2, See SET_PV_AUTO.
@@ -452,10 +494,10 @@ class Power(object):
     # volt1~volt3 [2 bytes] -> value in mV
     def set_pv_volt(self, volt1, volt2, volt3):
         v = bytearray(6)
-        v[0:1] = toBytes(volt1, 2)
-        v[2:3] = toBytes(volt2, 2)
-        v[4:5] = toBytes(volt3, 2)
-        self.write(CMD_SET_PV_VOLT, [v[0], v[1], v[2], v[3], v[4], v[5]])
+        v[0:2] = toBytes(volt1, 2)
+        v[2:4] = toBytes(volt2, 2)
+        v[4:] = toBytes(volt3, 2)
+        self.write(CMD_SET_PV_VOLT, list(v))
 
     # Sets the solar cell power tracking mode:
     # mode [1 byte] ->
@@ -524,4 +566,9 @@ class Power(object):
         assert type(struct) == eps_config2_t
         array = struct >>_>> c_structToBytes >>_>> bytesToList
         self.write(CMD_CONFIG2_SET, array)
+
+    # switches on/off electrolyzer
+    def electrolyzer(self, switch, delay=0):
+        assert switch == 0 or switch == 1
+        self.set_single_output(OUT_ELECTROLYZER, switch, delay)
 
