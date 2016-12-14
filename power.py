@@ -424,7 +424,8 @@ class Power(object):
 
     # reads [bytes] number of bytes from the device and returns a bytearray
     def read(self, bytes):
-        (x, r) = self._pi.i2c_read_device(self._dev, bytes+2) # first two read bytes -> [command][error code][data]
+        # first two read bytes -> [command][error code][data]
+        (x, r) = self._pi.i2c_read_device(self._dev, bytes+2) 
         if r[1] != 0:
             print "Command %i failed with error code %i" % (r[0], r[1])
         return r[2:]
