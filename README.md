@@ -1,2 +1,2 @@
 # SSDS
-power board i2c interface
+Cislunar Explorers - I2C interface for the Gomspace Nanopower p31u.
