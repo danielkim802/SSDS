@@ -1,5 +1,7 @@
 from ctypes import *
 from pigpio import *
+import RPi.GPIO as GPIO
+import time
 
 # define custom infix operators
 class Operator(object):
@@ -397,13 +399,16 @@ SIZE_EPS_HK_BASIC_T     = 24
 SIZE_EPS_CONFIG_T       = 58
 SIZE_EPS_CONFIG2_T      = 20
 
-# outputs
+# power outputs
 OUT_0                   = 0
 OUT_1                   = 1
-OUT_2                   = 2
-OUT_3                   = 3
-OUT_4                   = 4
-OUT_ELECTROLYZER        = 5
+OUT_2		            = 2
+OUT_BURNWIRE            = 3
+OUT_SOLENOID            = 4
+OUT_ELECTROLYZER        = 5		# 3.3v output
+
+# pi outputs
+OUT_PI_SPARKPLUG		= 7
 
 
 class Power(object):
@@ -411,6 +416,10 @@ class Power(object):
     def __init__(self, bus=PI_BUS, addr=POWER_ADDRESS, flags=0):
         self._pi = pi()                                     # initialize pigpio object
         self._dev = self._pi.i2c_open(bus, addr, flags)     # initialize i2c device
+
+        # initialize pi outputs
+        GPIO.setmode(GPIO.BOARD)
+		GPIO.setup(OUT_PI_SPARKPLUG, GPIO.OUT)
 
     # prints config/config2/housekeeping
     def displayAll(self):
@@ -568,8 +577,42 @@ class Power(object):
         array = struct >>_>> c_structToBytes >>_>> bytesToList
         self.write(CMD_CONFIG2_SET, array)
 
+    # Higher level functions -------------------
+
+    # output must be off before the function is called
+    # pulses high for duration amount of milliseconds
+    def pulse(self, output, duration, delay=0):
+        time.sleep(delay)
+        self.set_single_output(output, 1, 0)
+        time.sleep(duration*.001)
+        self.set_single_output(output, 0, 0)
+
+    # output must be off before the function is called
+    # pulses high for duration amount of milliseconds
+    def pulse_pi(self, output, duration, delay=0):
+    	time.sleep(delay)
+    	GPIO.output(output, GPIO.HIGH)
+    	time.sleep(duration*.001)
+    	GPIO.output(output, GPIO.LOW)
+
     # switches on/off electrolyzer
     def electrolyzer(self, switch, delay=0):
-        assert switch == 0 or switch == 1
-        self.set_single_output(OUT_ELECTROLYZER, switch, delay)
+        self.set_single_output(OUT_ELECTROLYZER, int(bool(switch != 0)), delay)
 
+    # pulses the solenoid for some number of milliseconds
+    # output must be off before the function is called
+    def solenoid(self, duration, delay=0):
+        self.pulse(OUT_SOLENOID, duration, delay)
+
+    # pulses sparkplug for some number of milliseconds
+    # output must be off before the function is called
+    def sparkplug(self, duration, delay=0):
+        self.pulse_pi(OUT_PI_SPARKPLUG, duration, delay)
+
+    # turns burnwire on for some number of seconds
+    def burnwire(self, duration, delay=0):
+    	time.sleep(delay)
+    	self.set_single_output(OUT_BURNWIRE, 1, 0)
+    	time.sleep(duration)
+    	self.set_single_output(OUT_BURNWIRE, 0, 0)
+        
