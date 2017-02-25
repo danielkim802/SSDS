@@ -61,7 +61,7 @@ class Power(object):
 
         # initialize pi outputs
         GPIO.setmode(GPIO.BOARD)
-		GPIO.setup(OUT_PI_SPARKPLUG, GPIO.OUT)
+	GPIO.setup(OUT_PI_SPARKPLUG, GPIO.OUT)
 
     # prints config/config2/housekeeping
     def displayAll(self):
