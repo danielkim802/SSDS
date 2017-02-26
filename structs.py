@@ -1,5 +1,6 @@
 from ctypes import *
 
+# ----------------------------------------------FORMATTING
 # define custom infix operators
 class Operator(object):
     def __init__(self, funct):
@@ -47,6 +48,7 @@ class Color:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+# ----------------------------------------------STRUCTS
 class TestingStruct(BigEndianStructure):
     _fields_ = [
         ("field1", c_uint8),
@@ -358,5 +360,11 @@ def displayConfig2(conf):
     print GR("Batt Critical Voltage:   ")+"%s" % (conf.batt_criticalvoltage >>_>> str >>_>> mv >>_>> R)
     print GR("Batt Normal Voltage:     ")+"%s" % (conf.batt_normalvoltage >>_>> str >>_>> mv >>_>> R)
 
-
+# ----------------------------------------------CONSTANTS
+CONFIG_DEFAULT = eps_config_t()
+CONFIG_DEFAULT.ppt_mode = 2
+CONFIG_DEFAULT.battheater_high = 5
+CONFIG_DEFAULT.vboost[0] = 3700
+CONFIG_DEFAULT.vboost[1] = 3700
+CONFIG_DEFAULT.vboost[2] = 3700
 

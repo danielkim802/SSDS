@@ -45,13 +45,13 @@ SIZE_EPS_CONFIG2_T      = 20
 # power outputs
 OUT_0                   = 0
 OUT_1                   = 1
-OUT_2		            = 2
+OUT_2                   = 2
 OUT_BURNWIRE            = 3
 OUT_SOLENOID            = 4
-OUT_ELECTROLYZER        = 5		# 3.3v output
+OUT_ELECTROLYZER        = 5     # 3.3v output
 
 # pi outputs
-OUT_PI_SPARKPLUG		= 7		# GPIO 4
+OUT_PI_SPARKPLUG        = 7     # GPIO 4
 
 class Power(object):
     # initializes power object with bus [bus] and device address [addr]
@@ -61,7 +61,7 @@ class Power(object):
 
         # initialize pi outputs
         GPIO.setmode(GPIO.BOARD)
-	GPIO.setup(OUT_PI_SPARKPLUG, GPIO.OUT)
+        GPIO.setup(OUT_PI_SPARKPLUG, GPIO.OUT)
 
     # prints config/config2/housekeeping
     def displayAll(self):
@@ -233,10 +233,10 @@ class Power(object):
     # output must be off before the function is called
     # pulses high for duration amount of milliseconds
     def pulse_pi(self, output, duration, delay=0):
-    	time.sleep(delay)
-    	GPIO.output(output, GPIO.HIGH)
-    	time.sleep(duration*.001)
-    	GPIO.output(output, GPIO.LOW)
+        time.sleep(delay)
+        GPIO.output(output, GPIO.HIGH)
+        time.sleep(duration*.001)
+        GPIO.output(output, GPIO.LOW)
 
     # switches on/off electrolyzer
     def electrolyzer(self, switch, delay=0):
@@ -254,8 +254,8 @@ class Power(object):
 
     # turns burnwire on for some number of seconds
     def burnwire(self, duration, delay=0):
-    	time.sleep(delay)
-    	self.set_single_output(OUT_BURNWIRE, 1, 0)
-    	time.sleep(duration)
-    	self.set_single_output(OUT_BURNWIRE, 0, 0)
+        time.sleep(delay)
+        self.set_single_output(OUT_BURNWIRE, 1, 0)
+        time.sleep(duration)
+        self.set_single_output(OUT_BURNWIRE, 0, 0)
         
