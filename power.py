@@ -50,6 +50,16 @@ OUT_BURNWIRE            = 3
 OUT_SOLENOID            = 4
 OUT_ELECTROLYZER        = 5     # 3.3v output
 
+# Outputs on board:
+#
+#       H1
+#     .-----.
+#  47 | 0 3 | 48
+#  49 | 1 4 | 50
+#  51 | 2 5 | 52
+#     '-----'
+#
+
 # pi outputs
 OUT_PI_SPARKPLUG        = 7     # GPIO 4
 
