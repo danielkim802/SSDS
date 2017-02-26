@@ -64,6 +64,9 @@ class Power(object):
         GPIO.setup(OUT_PI_SPARKPLUG, GPIO.OUT)
         GPIO.output(OUT_PI_SPARKPLUG, GPIO.HIGH)
 
+        # initialize eps outputs
+        self.set_output(0)
+
     # prints config/config2/housekeeping
     def displayAll(self):
         displayHK(self.get_hk_1())
