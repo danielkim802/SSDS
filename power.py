@@ -254,7 +254,8 @@ class Power(object):
 
     # switches on/off electrolyzer
     def electrolyzer(self, switch, delay=0):
-        self.set_single_output(OUT_ELECTROLYZER, int(bool(switch != 0)), delay)
+        assert type(switch) == bool
+        self.set_single_output(OUT_ELECTROLYZER, int(switch), delay)
 
     # pulses the solenoid for some number of milliseconds
     # output must be off before the function is called
@@ -272,4 +273,3 @@ class Power(object):
         self.set_single_output(OUT_BURNWIRE, 1, 0)
         time.sleep(duration)
         self.set_single_output(OUT_BURNWIRE, 0, 0)
-        

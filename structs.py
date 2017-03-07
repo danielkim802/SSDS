@@ -36,6 +36,7 @@ class Operator(object):
 # pipeline operator (>>_>> or |_|)
 _ = Operator(lambda x, y: y (x))
 
+# Color class for formatting
 class Color:
     HEADER = '\033[95m'
     BLUE = '\033[94m'
@@ -177,7 +178,8 @@ class eps_config2_t(BigEndianStructure):
 
 
 # ----------------------------------------------HELPERS
-# creates a struct given a string
+# takes a string [s] and returns the appropriate struct;
+# returns TestingStruct if string does not match any struct
 def structMaker(s):
     assert type(s) == str
     if s == "hkparam_t": return hkparam_t()
@@ -191,6 +193,11 @@ def structMaker(s):
     return TestingStruct()
 
 # struct -> c_bytearray
+# takes a struct [s] and converts it into a ctypes
+# bytearray of the appropriate size.
+# note: bytes are stored in order, e.g. the first field 
+# of the struct is stored starting in index 0 of the 
+# byte array and so on. 
 def c_structToByteArray(s):
     byteArray = (c_byte*(sizeof(s))) ()
     spoint = pointer(s)
@@ -199,6 +206,9 @@ def c_structToByteArray(s):
     return byteArray
 
 # c_bytearray -> bytearray
+# takes a ctypes bytearray [b] and converts it into a 
+# python bytearray of the appropriate size, adjusting 
+# for negative values (although it shouldn't matter in the end)
 def c_byteArrayToBytes(b):
     acc = []
     for n in b:
@@ -207,15 +217,19 @@ def c_byteArrayToBytes(b):
     return bytearray(acc)
 
 # c_bytearray -> struct
+# takes a ctypes bytearray [b] and converts it into a 
+# struct [s]. Raises assertion error if the size of the 
+# bytearray does not match the size of the struct.
 def c_byteArrayToStruct(b, s):
+    assert sizeof(b) == sizeof(structMaker(s))
     bpoint = pointer(b)
     struct = structMaker(s)
     spoint = pointer(struct)
     memmove(spoint, bpoint, sizeof(b))
     return struct
 
-# takes an int and outputs a bytearray with the int divided into 
-# [num] number of bytes
+# takes an int [i] and outputs a python bytearray with the 
+# int divided into [num] number of bytes
 def toBytes(i, num):
     binary = bin(i)[2:]
     rem = len(binary) % 8 
@@ -230,18 +244,23 @@ def toBytes(i, num):
     return bytearray(acc)
 
 # bytearray -> c_bytearray
+# takes a ctypes bytearray [i] and converts it into
+# a python bytearray.
 def c_bytesToByteArray(i):
     return (c_byte*len(i)) (*i) 
 
 # struct -> c_bytearray -> bytearray
+# converts a struct [s] into a python bytearray of the appropriate size.
 def c_structToBytes(s):
-    return c_byteArrayToBytes(c_structToByteArray(s))
+    return s >>_>> c_structToByteArray >>_>> c_byteArrayToBytes
 
 # bytearray -> c_bytearray -> struct
+# converts a python bytearray [i] to a struct [s].
 def c_bytesToStruct(i, s):
     return c_byteArrayToStruct(c_bytesToByteArray(i), s)
 
 # bytearray -> byte[]
+# converts a python bytearray [b] to a python list.
 def bytesToList(b):
     acc = []
     for n in b:
