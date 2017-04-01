@@ -55,7 +55,7 @@ SIZE_EPS_CONFIG_T       = 58
 SIZE_EPS_CONFIG2_T      = 20
 
 # power outputs
-OUT_0                   = 0
+OUT_AMPLIFIER           = 0
 OUT_1                   = 1
 OUT_2                   = 2
 OUT_BURNWIRE            = 3
@@ -74,6 +74,8 @@ OUT_ELECTROLYZER        = 5     # 3.3v output
 
 # pi outputs
 OUT_PI_SPARKPLUG        = 7     # GPIO 4
+OUT_PI_COMMS            = 11    # GPIO 17
+OUT_PI_SOLENOID_ENABLE  = 38    # GPIO 20
 
 class Power(object):
     # initializes power object with bus [bus] and device address [addr]
@@ -84,7 +86,11 @@ class Power(object):
         # initialize pi outputs
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(OUT_PI_SPARKPLUG, GPIO.OUT)
+	GPIO.setup(OUT_PI_COMMS, GPIO.OUT)
+        GPIO.setup(OUT_PI_SOLENOID_ENABLE, GPIO.OUT)
         GPIO.output(OUT_PI_SPARKPLUG, GPIO.HIGH)
+        GPIO.output(OUT_PI_COMMS, GPIO.LOW)
+        GPIO.output(OUT_PI_SOLENOID_ENABLE, GPIO.HIGH)
 
         # initialize eps outputs
         self.set_output(0)
@@ -271,17 +277,28 @@ class Power(object):
         assert type(switch) == bool
         self.set_single_output(OUT_ELECTROLYZER, int(switch), delay)
 
-    # pulses the solenoid for some number of 
-    # milliseconds [duration] with delay of [delay] seconds.
+    # spikes the solenoid for some number of 
+    # milliseconds [spike] and holds at 5v for [hold] 
+    # milliseconds with delay of [delay] seconds.
     # output must be off before the function is called
-    def solenoid(self, duration, delay=0):
-        self.pulse(OUT_SOLENOID, duration, delay)
+    def solenoid(self, spike, hold, delay=0):
+        time.sleep(delay)
+        GPIO.output(OUT_PI_SOLENOID_ENABLE, GPIO.HIGH)
+        self.set_single_output(OUT_SOLENOID, 1, 0)
+        time.sleep(.001*spike)
+        GPIO.output(OUT_PI_SOLENOID_ENABLE, GPIO.LOW)
+        time.sleep(.001*hold)
+        GPIO.output(OUT_PI_SOLENOID_ENABLE, GPIO.HIGH)
+        self.set_single_output(OUT_SOLENOID, 0, 0)
 
     # pulses sparkplug for some number of 
     # milliseconds [duration] with delay of [delay] seconds.
     # output must be off before the function is called
     def sparkplug(self, duration, delay=0):
-        self.pulse_pi(OUT_PI_SPARKPLUG, duration, delay)
+        time.sleep(delay)
+        GPIO.output(OUT_PI_SPARKPLUG, GPIO.LOW)
+        time.sleep(.001*duration)
+        GPIO.output(OUT_PI_SPARKPLUG, GPIO.HIGH)
 
     # turns burnwire on for [duration] seconds, with a 
     # delay of [delay] seconds.
@@ -290,3 +307,12 @@ class Power(object):
         self.set_single_output(OUT_BURNWIRE, 1, 0)
         time.sleep(duration)
         self.set_single_output(OUT_BURNWIRE, 0, 0)
+
+    def comms(self, transmit):
+        if transmit:
+            GPIO.output(OUT_PI_COMMS, GPIO.HIGH)
+        else:
+            GPIO.output(OUT_PI_COMMS, GPIO.LOW)
+
+    def amplifier(self, on):
+        self.set_single_output(OUT_AMPLIFIER, on==True, 0)
