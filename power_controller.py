@@ -24,7 +24,7 @@ from L3GD20 import L3GD20
 # pipeline operator (>>_>>)
 _ = power_structs._
 
-# device address
+# power device address
 POWER_ADDRESS           = 0x02
 
 # raspberry pi bus number

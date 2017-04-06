@@ -337,12 +337,12 @@ def displayConfig(conf):
     degc = lambda x: x+"degC"
     sec = lambda x: x+"s"
     print "***************-CONFIG-***************" >>_>> G
-    print GR("PPT mode:                  ")+"%s" %                                                      (conf.ppt_mode >>_>> pptmode >>_>> R)
-    print GR("Battheater mode:           ")+"%s" %                                                      (conf.battheater_mode >>_>> battheatermode >>_>> R)
-    print GR("Battheater low:            ")+"%s" %                                                      (conf.battheater_low >>_>> str >>_>> degc >>_>> R)
-    print GR("Battheater high:           ")+"%s" %                                                      (conf.battheater_high >>_>> str >>_>> degc >>_>> R)
+    print GR("PPT mode:                    ")+"%s" %                                                      (conf.ppt_mode >>_>> pptmode >>_>> R)
+    print GR("Battheater mode:             ")+"%s" %                                                      (conf.battheater_mode >>_>> battheatermode >>_>> R)
+    print GR("Battheater low:              ")+"%s" %                                                      (conf.battheater_low >>_>> str >>_>> degc >>_>> R)
+    print GR("Battheater high:             ")+"%s" %                                                      (conf.battheater_high >>_>> str >>_>> degc >>_>> R)
 
-    print GR("Nominal mode output value: ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s] 7-[%s] 8-[%s]" % (conf.output_normal_value[0] >>_>> str >>_>> R,
+    print GR("Nominal mode output value:   ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s] 7-[%s] 8-[%s]" % (conf.output_normal_value[0] >>_>> str >>_>> R,
                                                                                                          conf.output_normal_value[1] >>_>> str >>_>> R,
                                                                                                          conf.output_normal_value[2] >>_>> str >>_>> R,
                                                                                                          conf.output_normal_value[3] >>_>> str >>_>> R, 
@@ -351,7 +351,7 @@ def displayConfig(conf):
                                                                                                          conf.output_normal_value[6] >>_>> str >>_>> R,
                                                                                                          conf.output_normal_value[7] >>_>> str >>_>> R)
 
-    print GR("Safe mode output value:    ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s] 7-[%s] 8-[%s]" % (conf.output_safe_value[0] >>_>> str >>_>> R,
+    print GR("Safe mode output value:      ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s] 7-[%s] 8-[%s]" % (conf.output_safe_value[0] >>_>> str >>_>> R,
                                                                                                          conf.output_safe_value[1] >>_>> str >>_>> R,
                                                                                                          conf.output_safe_value[2] >>_>> str >>_>> R,
                                                                                                          conf.output_safe_value[3] >>_>> str >>_>> R, 
@@ -360,7 +360,7 @@ def displayConfig(conf):
                                                                                                          conf.output_safe_value[6] >>_>> str >>_>> R,
                                                                                                          conf.output_safe_value[7] >>_>> str >>_>> R)
 
-    print GR("Output initial on:         ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s] 7-[%s] 8-[%s]" % (conf.output_initial_on_delay[0] >>_>> str >>_>> sec >>_>> R,
+    print GR("Output initial on:           ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s] 7-[%s] 8-[%s]" % (conf.output_initial_on_delay[0] >>_>> str >>_>> sec >>_>> R,
                                                                                                          conf.output_initial_on_delay[1] >>_>> str >>_>> sec >>_>> R,
                                                                                                          conf.output_initial_on_delay[2] >>_>> str >>_>> sec >>_>> R,
                                                                                                          conf.output_initial_on_delay[3] >>_>> str >>_>> sec >>_>> R,
@@ -369,7 +369,7 @@ def displayConfig(conf):
                                                                                                          conf.output_initial_on_delay[6] >>_>> str >>_>> sec >>_>> R,
                                                                                                          conf.output_initial_on_delay[7] >>_>> str >>_>> sec >>_>> R)
 
-    print GR("Output initial off:        ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s] 7-[%s] 8-[%s]" % (conf.output_initial_off_delay[0] >>_>> str >>_>> sec >>_>> R,
+    print GR("Output initial off:          ")+"1-[%s] 2-[%s] 3-[%s] 4-[%s] 5-[%s] 6-[%s] 7-[%s] 8-[%s]" % (conf.output_initial_off_delay[0] >>_>> str >>_>> sec >>_>> R,
                                                                                                          conf.output_initial_off_delay[1] >>_>> str >>_>> sec >>_>> R,
                                                                                                          conf.output_initial_off_delay[2] >>_>> str >>_>> sec >>_>> R,
                                                                                                          conf.output_initial_off_delay[3] >>_>> str >>_>> sec >>_>> R,
@@ -378,7 +378,7 @@ def displayConfig(conf):
                                                                                                          conf.output_initial_off_delay[6] >>_>> str >>_>> sec >>_>> R,
                                                                                                          conf.output_initial_off_delay[7] >>_>> str >>_>> sec >>_>> R)
 
-    print GR("PPT point for boost conv:  ")+"1-%s 2-%s 3-%s" %                                          (conf.vboost[0] >>_>> str >>_>> mv >>_>> R,
+    print GR("PPT point for boost conv:    ")+"1-%s 2-%s 3-%s" %                                          (conf.vboost[0] >>_>> str >>_>> mv >>_>> R,
                                                                                                          conf.vboost[1] >>_>> str >>_>> mv >>_>> R,
                                                                                                          conf.vboost[2] >>_>> str >>_>> mv >>_>> R)
 
@@ -387,10 +387,10 @@ def displayConfig2(conf):
     assert type(conf) == eps_config2_t
     mv = lambda x: x+"mV"
     print "***************-CONFIG2-***************" >>_>> G
-    print GR("Batt Max Voltage:        ")+"%s" % (conf.batt_maxvoltage >>_>> str >>_>> mv >>_>> R)
-    print GR("Batt Safe Voltage:       ")+"%s" % (conf.batt_safevoltage >>_>> str >>_>> mv >>_>> R)
-    print GR("Batt Critical Voltage:   ")+"%s" % (conf.batt_criticalvoltage >>_>> str >>_>> mv >>_>> R)
-    print GR("Batt Normal Voltage:     ")+"%s" % (conf.batt_normalvoltage >>_>> str >>_>> mv >>_>> R)
+    print GR("Batt Max Voltage:            ")+"%s" % (conf.batt_maxvoltage >>_>> str >>_>> mv >>_>> R)
+    print GR("Batt Safe Voltage:           ")+"%s" % (conf.batt_safevoltage >>_>> str >>_>> mv >>_>> R)
+    print GR("Batt Critical Voltage:       ")+"%s" % (conf.batt_criticalvoltage >>_>> str >>_>> mv >>_>> R)
+    print GR("Batt Normal Voltage:         ")+"%s" % (conf.batt_normalvoltage >>_>> str >>_>> mv >>_>> R)
 
 # ----------------------------------------------CONSTANTS
 CONFIG_DEFAULT = eps_config_t()
