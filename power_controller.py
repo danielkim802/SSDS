@@ -84,7 +84,10 @@ class Power(object):
     def __init__(self, bus=PI_BUS, addr=POWER_ADDRESS, flags=0):
         self._pi = pi()                                     # initialize pigpio object
         self._dev = self._pi.i2c_open(bus, addr, flags)     # initialize i2c device
+
+        # I2C devices
         self._adc = Adafruit_ADS1x15.ADS1115()              # initialize adc
+        
 
         # initialize pi outputs
         GPIO.setmode(GPIO.BOARD)
