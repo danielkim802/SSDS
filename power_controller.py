@@ -372,3 +372,44 @@ class Power(object):
             print("{:7.2f} {:7.2f} {:7.2f}".format(x, y, z))
             time.sleep(dt)
 
+    def adjust_string(self, string, length):
+        new = string
+        if len(new) > length:
+            new = new[:length]
+        else if len(new) < length:
+            new += " "*(length-len(new))
+        return new
+
+    def display_sensors():
+        x, y, z, dt = 0, 0, 0, 0.1
+        while True:
+            # gyro info
+            header_gyro = "                GYRO                "
+            dxyz = self._gyro.Get_CalOut_Value()
+            x, y, z = x+dxyz[0]*dt, y+dxyz[1]*dt, z+dxyz[2]*dt
+            gyro_r1 = adjust_string("x: "+str(x), len(header_gyro))
+            gyro_r2 = adjust_string("y: "+str(y), len(header_gyro))
+            gyro_r3 = adjust_string("z: "+str(z), len(header_gyro))
+
+            # adc info
+            header_adc = "        PRESSURE        "
+            adc_r1 = adjust_string(str(5*self._adc.read_adc(0, gain)/26676), len(header_adc))
+            adc_r2 = " "*len(header_adc)
+            adc_r3 = adc_r2
+
+            # rtc info
+            header_rtc = "                         RTC                         "
+            rtc_r1 = adjust_string("time: "+str(self._rtc.read_datetime()), len(header_rtc))
+            rtc_r2 = adjust_string("temp: "+str(self._rtc.getTemp()), len(header_rtc))
+            rtc_r3 = " "*len(header_rtc)
+
+            # print everything
+            print "|%s|%s|%s|" % (header_gyro, header_adc, header_rtc)
+            print "|%s|%s|%s|" % (gyro_r1, adc_r1, rtc_r1)
+            print "|%s|%s|%s|" % (gyro_r2, adc_r2, rtc_r2)
+            print "|%s|%s|%s|" % (gyro_r3, adc_r3, rtc_r3)
+            print "\033[F"*4
+
+            time.sleep(dt)
+
+
