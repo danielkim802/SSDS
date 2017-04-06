@@ -16,6 +16,8 @@ import RPi.GPIO as GPIO
 import time
 import power_structs
 
+import Adafruit_ADS1x15
+
 # pipeline operator (>>_>>)
 _ = power_structs._
 
@@ -82,11 +84,12 @@ class Power(object):
     def __init__(self, bus=PI_BUS, addr=POWER_ADDRESS, flags=0):
         self._pi = pi()                                     # initialize pigpio object
         self._dev = self._pi.i2c_open(bus, addr, flags)     # initialize i2c device
+        self._adc = Adafruit_ADS1x15.ADS1115()              # initialize adc
 
         # initialize pi outputs
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(OUT_PI_SPARKPLUG, GPIO.OUT)
-	GPIO.setup(OUT_PI_COMMS, GPIO.OUT)
+        GPIO.setup(OUT_PI_COMMS, GPIO.OUT)
         GPIO.setup(OUT_PI_SOLENOID_ENABLE, GPIO.OUT)
         GPIO.output(OUT_PI_SPARKPLUG, GPIO.HIGH)
         GPIO.output(OUT_PI_COMMS, GPIO.LOW)
@@ -316,3 +319,10 @@ class Power(object):
 
     def amplifier(self, on):
         self.set_single_output(OUT_AMPLIFIER, on==True, 0)
+
+    def adc(self, t, n, gain=2/3):
+        output = []
+        for i in range(n):
+            val = 5*self._adc.read_adc(0, gain)/26676
+            output += [val]
+            print val

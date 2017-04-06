@@ -86,7 +86,7 @@ class hkparam_t(BigEndianStructure):
         ("ppt_mode",        c_uint8),       # 0 = Hardware, 1 = MPPT, 2 = Fixed SW PPT.
         ("channel_status",  c_uint8)        # Mask of output channel status, 1=on, 0=off
                                             # MSB - [QH QS 3.3V3 3.3V2 3.3V1 5V3 5V2 5V1] - LSB
-                                            # QH = Quadbat heater, QS = Quadbat switch      
+                                            # QH = Quadbat heater, QS = Quadbat switch
     ]
                                             # EPS reset cause can be
                                             #   0. Unknown reset
