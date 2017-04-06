@@ -229,7 +229,7 @@ class SDL_DS3231():
         #print "i2c_address =0x%x eepromaddress = 0x%x  " % (self._at24c32_addr, address)
 
         self.set_current_AT24C32_address(address)
-	    return self._bus.read_byte(self._at24c32_addr)
+	return self._bus.read_byte(self._at24c32_addr)
 
 	
 
