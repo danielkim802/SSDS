@@ -404,10 +404,10 @@ class Power(object):
             rtc_r3 = " "*len(header_rtc)
 
             # print everything
-            print "|%s|%s|%s|" % (header_gyro, header_adc, header_rtc)
-            print "|%s|%s|%s|" % (gyro_r1, adc_r1, rtc_r1)
-            print "|%s|%s|%s|" % (gyro_r2, adc_r2, rtc_r2)
-            print "|%s|%s|%s|" % (gyro_r3, adc_r3, rtc_r3)
+            print "|%s|%s|%s|" % (header_gyro,  header_adc, header_rtc)
+            print "|%s|%s|%s|" % (gyro_r1,      adc_r1,     rtc_r1)
+            print "|%s|%s|%s|" % (gyro_r2,      adc_r2,     rtc_r2)
+            print "|%s|%s|%s|" % (gyro_r3,      adc_r3,     rtc_r3)
             print "\033[F"*4
 
             time.sleep(dt)
