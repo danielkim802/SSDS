@@ -364,7 +364,7 @@ class Power(object):
         x = 0
         y = 0
         z = 0
-        while 1==1:
+        while True:
             dxyz = self._gyro.Get_CalOut_Value()
             x += dxyz[0]*dt;
             y += dxyz[1]*dt;
@@ -393,14 +393,14 @@ class Power(object):
 
             # adc info
             header_adc = "        PRESSURE        "
-            adc_r1 = adjust_string(str(5*self._adc.read_adc(0, gain)/26676), len(header_adc))
+            adc_r1 = adjust_string(str(300*self._adc.read_adc(0, gain)/26676)+" psi", len(header_adc))
             adc_r2 = " "*len(header_adc)
             adc_r3 = adc_r2
 
             # rtc info
             header_rtc = "                         RTC                         "
             rtc_r1 = adjust_string("time: "+str(self._rtc.read_datetime()), len(header_rtc))
-            rtc_r2 = adjust_string("temp: "+str(self._rtc.getTemp()), len(header_rtc))
+            rtc_r2 = adjust_string("temp: "+str(self._rtc.getTemp())+" C", len(header_rtc))
             rtc_r3 = " "*len(header_rtc)
 
             # print everything
