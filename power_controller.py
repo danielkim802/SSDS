@@ -381,15 +381,10 @@ class Power(object):
             new += " "*(length-len(new))
         return new
 
-<<<<<<< HEAD
     def display_sensors(self):
         x, y, z, dt = 0, 0, 0, 0.1
-=======
-    def display_sensors():
-        x, y, z, dt = 0, 0, 0, .01
-
->>>>>>> 8d3df6ee4d693ee9590b4061932d430251516e30
-        while True:
+       
+	while True:
             # gyro info
             header_gyro = "                GYRO                "
             dxyz = self._gyro.Get_CalOut_Value()
