@@ -377,7 +377,7 @@ class Power(object):
         new = string
         if len(new) > length:
             new = new[:length]
-        else if len(new) < length:
+        elif len(new) < length:
             new += " "*(length-len(new))
         return new
 
@@ -413,5 +413,23 @@ class Power(object):
             print "\033[F"*4
 
             time.sleep(dt)
+
+    def nasa_demo():
+        r = raw_input("electrolyzers: ")
+        self.electrolyzer(True)
+        time.sleep(float(r))
+        self.electrolyzer(False)
+
+        r = raw_input("sparkplug:")
+        self.sparkplug(3)
+
+        r = raw_input("solenoid:")
+        self.solenoid(10, 250)
+
+        r = raw_input("burnwire:")
+        self.burnwire(4)
+
+        r = raw_input("sensor data:")
+        self.display_sensors()
 
 
