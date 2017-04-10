@@ -14,6 +14,7 @@ from pigpio import *
 from power_structs import *
 import RPi.GPIO as GPIO
 import time
+import datetime
 import power_structs
 
 # I2C libraries
@@ -381,7 +382,8 @@ class Power(object):
         return new
 
     def display_sensors():
-        x, y, z, dt = 0, 0, 0, 0.1
+        x, y, z, dt = 0, 0, 0, .01
+
         while True:
             # gyro info
             header_gyro = "                GYRO                "
