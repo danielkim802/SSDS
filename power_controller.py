@@ -14,6 +14,7 @@ from pigpio import *
 from power_structs import *
 import RPi.GPIO as GPIO
 import time
+import datetime
 import power_structs
 
 # I2C libraries
@@ -364,7 +365,7 @@ class Power(object):
         x = 0
         y = 0
         z = 0
-        while 1==1:
+        while True:
             dxyz = self._gyro.Get_CalOut_Value()
             x += dxyz[0]*dt;
             y += dxyz[1]*dt;
@@ -380,8 +381,14 @@ class Power(object):
             new += " "*(length-len(new))
         return new
 
+<<<<<<< HEAD
     def display_sensors(self):
         x, y, z, dt = 0, 0, 0, 0.1
+=======
+    def display_sensors():
+        x, y, z, dt = 0, 0, 0, .01
+
+>>>>>>> 8d3df6ee4d693ee9590b4061932d430251516e30
         while True:
             # gyro info
             header_gyro = "                GYRO                "
@@ -393,23 +400,41 @@ class Power(object):
 
             # adc info
             header_adc = "        PRESSURE        "
-            adc_r1 = self.adjust_string(str(5*self._adc.read_adc(0, 2/3)/26676), len(header_adc))
+            adc_r1 = self.adjust_string(str(300*self._adc.read_adc(0, gain)/26676)+" psi", len(header_adc))
             adc_r2 = " "*len(header_adc)
             adc_r3 = adc_r2
 
             # rtc info
             header_rtc = "                         RTC                         "
             rtc_r1 = self.adjust_string("time: "+str(self._rtc.read_datetime()), len(header_rtc))
-            rtc_r2 = self.adjust_string("temp: "+str(self._rtc.getTemp()), len(header_rtc))
+            rtc_r2 = self.adjust_string("temp: "+str(self._rtc.getTemp())+" C", len(header_rtc))
             rtc_r3 = " "*len(header_rtc)
 
             # print everything
-            print "|%s|%s|%s|" % (header_gyro, header_adc, header_rtc)
-            print "|%s|%s|%s|" % (gyro_r1, adc_r1, rtc_r1)
-            print "|%s|%s|%s|" % (gyro_r2, adc_r2, rtc_r2)
-            print "|%s|%s|%s|" % (gyro_r3, adc_r3, rtc_r3)
+            print "|%s|%s|%s|" % (header_gyro,  header_adc, header_rtc)
+            print "|%s|%s|%s|" % (gyro_r1,      adc_r1,     rtc_r1)
+            print "|%s|%s|%s|" % (gyro_r2,      adc_r2,     rtc_r2)
+            print "|%s|%s|%s|" % (gyro_r3,      adc_r3,     rtc_r3)
             print "\033[F"*5
 
             time.sleep(dt)
+
+    def nasa_demo():
+        r = raw_input("electrolyzers: ")
+        self.electrolyzer(True)
+        time.sleep(float(r))
+        self.electrolyzer(False)
+
+        r = raw_input("sparkplug:")
+        self.sparkplug(3)
+
+        r = raw_input("solenoid:")
+        self.solenoid(10, 250)
+
+        r = raw_input("burnwire:")
+        self.burnwire(4)
+
+        r = raw_input("sensor data:")
+        self.display_sensors()
 
 
