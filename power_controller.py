@@ -381,10 +381,12 @@ class Power(object):
             new += " "*(length-len(new))
         return new
 
-    def display_sensors(self):
+    def display_sensors(self, t=0):
         x, y, z, dt = 0, 0, 0, 0.1
-       
-	while True:
+        cycles = 0
+        condition = lambda: True if t == 0 else cycles <= t
+
+        while True:
             # gyro info
             header_gyro = "                GYRO                "
             dxyz = self._gyro.Get_CalOut_Value()
@@ -431,5 +433,8 @@ class Power(object):
 
         r = raw_input("sensor data:")
         self.display_sensors()
+
+    def capture(self):
+        os.system("cd ivport-master\npython ivport_capture_A.py")
 
 
