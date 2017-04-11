@@ -395,7 +395,7 @@ class Power(object):
 
             # adc info
             header_adc = "        PRESSURE        "
-            adc_r1 = self.adjust_string(str(300*self._adc.read_adc(0, gain)/26676)+" psi", len(header_adc))
+            adc_r1 = self.adjust_string(str(300*self._adc.read_adc(0, 2/3)/26676)+" psi", len(header_adc))
             adc_r2 = " "*len(header_adc)
             adc_r3 = adc_r2
 
@@ -414,7 +414,7 @@ class Power(object):
 
             time.sleep(dt)
 
-    def nasa_demo():
+    def nasa_demo(self):
         r = raw_input("electrolyzers: ")
         self.electrolyzer(True)
         time.sleep(float(r))
