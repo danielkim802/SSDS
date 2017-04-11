@@ -414,7 +414,7 @@ class Power(object):
 
             time.sleep(dt)
 
-    def nasa_demo():
+    def nasa_demo(self):
         r = raw_input("electrolyzers: ")
         self.electrolyzer(True)
         time.sleep(float(r))
