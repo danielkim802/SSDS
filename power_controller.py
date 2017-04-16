@@ -439,13 +439,13 @@ class Power(object):
 
     def chamber(self, t):
         text_file = open("test_4.txt", "w")
-        string = ""
+        string = "time:"+str(t)+"\n"
         while True:
             hk = self.get_hk_1()
-            string += "pv "+str(hk.pv)+"\n" + \
+            string += "pv "+str(hk.pv[0]+",")+str(hk.pv[1]+",")+str(hk.pv[2])+"\n" + \
                       "bv "+str(hk.bv)+"\n" + \
                       "sc "+str(hk.sc)+"\n" + \
-                      "temp "+str(hk.temp)+"\n@\n"
+                      "temp "+str(temp.pv[0])+","+str(temp.pv[1])+","+str(temp.pv[2])+","+str(hk.temp[3])+"\n@\n"
             text_file.write(string)
             time.sleep(t)
 
