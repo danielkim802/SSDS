@@ -445,7 +445,7 @@ class Power(object):
             string += "pv "+str(hk.pv[0])+","+str(hk.pv[1])+","+str(hk.pv[2])+"\n" + \
                       "bv "+str(hk.bv)+"\n" + \
                       "sc "+str(hk.sc)+"\n" + \
-                      "temp "+str(temp.pv[0])+","+str(temp.pv[1])+","+str(temp.pv[2])+","+str(hk.temp[3])+"\n@\n"
+                      "temp "+str(hk.temp[0])+","+str(hk.temp[1])+","+str(hk.temp[2])+","+str(hk.temp[3])+"\n@\n"
             text_file.write(string)
             time.sleep(t)
 
