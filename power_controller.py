@@ -446,7 +446,7 @@ class Power(object):
                       "bv "+str(hk.bv)+"\n" + \
                       "sc "+str(hk.sc)+"\n" + \
                       "temp "+str(hk.temp[0])+","+str(hk.temp[1])+","+str(hk.temp[2])+","+str(hk.temp[3])+"\n@\n"
-            text_file.truncate()
+            text_file.truncate(0)
             text_file.write(string)
             time.sleep(t)
 
