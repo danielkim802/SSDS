@@ -441,14 +441,18 @@ class Power(object):
         text_file = open(name, "w")
         string = "time:"+str(t)+"\n"
         while True:
-            hk = self.get_hk_1()
-            nxt = "pv "+str(hk.pv[0])+","+str(hk.pv[1])+","+str(hk.pv[2])+"\n" + \
+            try:
+                hk = self.get_hk_1()
+                nxt = "pv "+str(hk.pv[0])+","+str(hk.pv[1])+","+str(hk.pv[2])+"\n" + \
+                      "pc "+str(hk.pc)+"\n" + \
                       "bv "+str(hk.bv)+"\n" + \
                       "sc "+str(hk.sc)+"\n" + \
                       "temp "+str(hk.temp[0])+","+str(hk.temp[1])+","+str(hk.temp[2])+","+str(hk.temp[3])+"\n@\n"
-            print nxt
-            string += nxt
-            text_file.truncate(0)
-            text_file.write(string)
+                print nxt
+                string += nxt
+                text_file.truncate(0)
+                text_file.write(string)
+            except:
+                print "recovered from error"
             time.sleep(t)
 
