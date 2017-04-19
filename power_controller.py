@@ -437,8 +437,8 @@ class Power(object):
     def capture(self):
         os.system("cd ivport-master\npython ivport_capture_A.py")
 
-    def chamber(self, t):
-        text_file = open("test_5.txt", "w")
+    def chamber(self, name, t):
+        text_file = open(name, "w")
         string = "time:"+str(t)+"\n"
         while True:
             hk = self.get_hk_1()
@@ -446,6 +446,7 @@ class Power(object):
                       "bv "+str(hk.bv)+"\n" + \
                       "sc "+str(hk.sc)+"\n" + \
                       "temp "+str(hk.temp[0])+","+str(hk.temp[1])+","+str(hk.temp[2])+","+str(hk.temp[3])+"\n@\n"
+            text_file.truncate()
             text_file.write(string)
             time.sleep(t)
 
