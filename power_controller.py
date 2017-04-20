@@ -439,7 +439,8 @@ class Power(object):
 
     def chamber(self, name, t):
         text_file = open(name, "w")
-        string = "time:"+str(t)+"\n"
+        header = "time:"+str(t)+"\n"
+        text_file.write(header)
         while True:
             try:
                 hk = self.get_hk_1()
@@ -449,9 +450,7 @@ class Power(object):
                       "sc "+str(hk.sc)+"\n" + \
                       "temp "+str(hk.temp[0])+","+str(hk.temp[1])+","+str(hk.temp[2])+","+str(hk.temp[3])+"\n@\n"
                 print nxt
-                string += nxt
-                text_file.truncate(0)
-                text_file.write(string)
+                text_file.write(nxt)
             except:
                 print "recovered from error"
             time.sleep(t)
