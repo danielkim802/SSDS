@@ -89,23 +89,24 @@ class Power(object):
         self._pi = pi()                                     # initialize pigpio object
         self._dev = self._pi.i2c_open(bus, addr, flags)     # initialize i2c device
 
-        # # I2C devices
-        # self._adc = Adafruit_ADS1x15.ADS1115()              # initialize adc
-        # self._rtc = SDL_DS3231.SDL_DS3231(1, 0x68)          # initialize rtc
-        # self._gyro = L3GD20(busId = 1,                      # initialize gyro
-        #                     slaveAddr = 0x6b, 
-        #                     ifLog = False, 
-        #                     ifWriteBlock=False)
-        # # Preconfiguration
-        # self._gyro.Set_PowerMode("Normal")
-        # self._gyro.Set_FullScale_Value("250dps")
-        # self._gyro.Set_AxisX_Enabled(True)
-        # self._gyro.Set_AxisY_Enabled(True)
-        # self._gyro.Set_AxisZ_Enabled(True)
+        # I2C devices
+        self._adc = Adafruit_ADS1x15.ADS1115()              # initialize adc
+        self._rtc = SDL_DS3231.SDL_DS3231(1, 0x68)          # initialize rtc
+        self._gyro = L3GD20(busId = 1,                      # initialize gyro
+                            slaveAddr = 0x6b, 
+                            ifLog = False, 
+                            ifWriteBlock=False)
+        
+        # Preconfiguration
+        self._gyro.Set_PowerMode("Normal")
+        self._gyro.Set_FullScale_Value("250dps")
+        self._gyro.Set_AxisX_Enabled(True)
+        self._gyro.Set_AxisY_Enabled(True)
+        self._gyro.Set_AxisZ_Enabled(True)
 
-        # # Print current configuration
-        # self._gyro.Init()
-        # self._gyro.Calibrate()
+        # Print current configuration
+        self._gyro.Init()
+        self._gyro.Calibrate()
 
         # initialize pi outputs
         GPIO.setmode(GPIO.BOARD)
