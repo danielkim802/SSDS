@@ -96,6 +96,7 @@ class Power(object):
                             slaveAddr = 0x6b, 
                             ifLog = False, 
                             ifWriteBlock=False)
+        
         # Preconfiguration
         self._gyro.Set_PowerMode("Normal")
         self._gyro.Set_FullScale_Value("250dps")
@@ -456,4 +457,15 @@ class Power(object):
             except:
                 print "recovered from error"
             time.sleep(t)
+
+
+
+
+
+
+
+
+
+
+
 
