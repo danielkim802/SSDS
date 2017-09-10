@@ -188,10 +188,30 @@ class eps_config2_t(BigEndianStructure):
         ("reserved2",               c_uint8*4)
     ]
 
-
 # ----------------------------------------------HELPERS
+# returns true if s is of type struct
+def isStruct(s):
+	allStructs = [
+		TestingStruct,
+		hkparam_t,
+		eps_hk_t,
+		eps_hk_vi_t,
+		eps_hk_out_t,
+		eps_hk_wdt_t,
+		eps_hk_basic_t,
+		eps_config_t,
+		eps_config2_t
+	]
+	return type(s) in allStructs
+
+# returns true if arr is a ctypes byte array with the 
+# specified number of elements.
+def isCByteArray(arr):
+	return type(arr).__name__[:13] == "c_byte_Array_"
+
 # takes a string [s] and returns the appropriate struct;
 # returns TestingStruct if string does not match any struct
+# raises: AssertionError if s is not a string
 def structMaker(s):
     assert type(s) == str
     if s == "hkparam_t": return hkparam_t()
@@ -210,7 +230,9 @@ def structMaker(s):
 # note: bytes are stored in order, e.g. the first field 
 # of the struct is stored starting in index 0 of the 
 # byte array and so on. 
+# raises: AssertionError if s is not a struct
 def c_structToByteArray(s):
+	assert isStruct(s)
     byteArray = (c_byte*(sizeof(s))) ()
     spoint = pointer(s)
     cpoint = pointer(byteArray)
@@ -221,7 +243,9 @@ def c_structToByteArray(s):
 # takes a ctypes bytearray [b] and converts it into a 
 # python bytearray of the appropriate size, adjusting 
 # for negative values (although it shouldn't matter in the end)
+# raises: AssertionError if b is not a ctypes byte array
 def c_byteArrayToBytes(b):
+	assert isCByteArray(b)
     acc = []
     for n in b:
         if n < 0: acc += [256+n]    # adjust for negative values
@@ -232,6 +256,8 @@ def c_byteArrayToBytes(b):
 # takes a ctypes bytearray [b] and converts it into a 
 # struct [s]. Raises assertion error if the size of the 
 # bytearray does not match the size of the struct.
+# raises: AssertionError if s is not a string
+#         AssertionError if b is not correct size
 def c_byteArrayToStruct(b, s):
     assert sizeof(b) == sizeof(structMaker(s))
     bpoint = pointer(b)
@@ -242,7 +268,9 @@ def c_byteArrayToStruct(b, s):
 
 # takes an int [i] and outputs a python bytearray with the 
 # int divided into [num] number of bytes
+# raises: AssertionError if i or num are not ints
 def toBytes(i, num):
+    assert type(i) == int and type(num) == int
     binary = bin(i)[2:]
     rem = len(binary) % 8 
     binary = '0'*(8-rem)+binary     # add zeros to make it 8 bit
@@ -258,22 +286,31 @@ def toBytes(i, num):
 # bytearray -> c_bytearray
 # takes a ctypes bytearray [i] and converts it into
 # a python bytearray.
+# raises: AssertionError if i is not a ctypes bytearray
 def c_bytesToByteArray(i):
+	assert isCByteArray(i)
     return (c_byte*len(i)) (*i) 
 
 # struct -> c_bytearray -> bytearray
 # converts a struct [s] into a python bytearray of the appropriate size.
+# raises: AssertionError if s is not a struct
 def c_structToBytes(s):
+	assert isStruct(s)
     return s >>_>> c_structToByteArray >>_>> c_byteArrayToBytes
 
 # bytearray -> c_bytearray -> struct
 # converts a python bytearray [i] to a struct [s].
+# raises: TODO: how to check types of ctypes
 def c_bytesToStruct(i, s):
+    assert type(i) == bytearray
+    assert type(s) == str
     return c_byteArrayToStruct(c_bytesToByteArray(i), s)
 
 # bytearray -> byte[]
 # converts a python bytearray [b] to a python list.
+# raises: AssertionError if b is not a python bytearray
 def bytesToList(b):
+    assert type(b) == bytearray
     acc = []
     for n in b:
         acc += [n]

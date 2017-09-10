@@ -31,6 +31,9 @@ POWER_ADDRESS           = 0x02
 # raspberry pi bus number
 PI_BUS                  = 1
 
+# allowed ranges
+MAX_PV_VOLTAGE			= 4000	# change later
+
 # command registers
 CMD_PING                = 0x01
 CMD_REBOOT              = 0x04
@@ -92,10 +95,10 @@ class Power(object):
         # I2C devices
         self._adc = Adafruit_ADS1x15.ADS1115()              # initialize adc
         self._rtc = SDL_DS3231.SDL_DS3231(1, 0x68)          # initialize rtc
-        self._gyro = L3GD20(busId = 1,                      # initialize gyro
-                            slaveAddr = 0x6b, 
-                            ifLog = False, 
-                            ifWriteBlock=False)
+        self._gyro = L3GD20(busId 		 = 1,            	# initialize gyro
+                            slaveAddr 	 = 0x6b, 
+                            ifLog 		 = False, 
+                            ifWriteBlock = False)
         
         # Preconfiguration
         self._gyro.Set_PowerMode("Normal")
@@ -127,6 +130,7 @@ class Power(object):
         displayConfig2(self.config2_get())
 
     # writes byte list [values] with command register [cmd]
+    # raises: ValueError if cmd or values are not bytes
     def write(self, cmd, values):
         self._pi.i2c_write_device(self._dev, bytearray([cmd]+values))
 
@@ -140,6 +144,7 @@ class Power(object):
 
     # pings value
     # value [1 byte]
+    # raises: ValueError if value is not a byte
     def ping(self, value):
         self.write(CMD_PING, [value])
         return self.read(1)
@@ -186,6 +191,7 @@ class Power(object):
 
     # sets voltage output channels with bit mask: 
     # byte [1 byte] -> [NC NC 3.3V3 3.3V2 3.3V1 5V3 5V2 5V1]
+    # raises: ValueError if byte is not char
     def set_output(self, byte):
         self.write(CMD_SET_OUTPUT, [byte])
 
@@ -193,14 +199,20 @@ class Power(object):
     # channel [1 byte]  -> voltage = (0~5), BP4 heater = 6, BP4 switch = 7
     # value   [1 byte]  -> on = 1, off = 0
     # delay   [2 bytes] -> [seconds]
+    # raises: AssertionError if channel or value are out of range
+    # 		  AssertionError if delay is not a number
     def set_single_output(self, channel, value, delay):
+    	assert 0 <= channel <= 7, "channel must be in range [0, 7]"
+    	assert value == 0 or value == 1, "value must be 0 or 1"
         d = toBytes(delay, 2)
         self.write(CMD_SET_SINGLE_OUTPUT, [channel, value]+list(d))
 
     # Set the voltage on the photo-voltaic inputs V1, V2, V3 in mV. 
     # Takes effect when MODE = 2, See SET_PV_AUTO.
     # volt1~volt3 [2 bytes] -> value in mV
+    # raises: AssertionError if voltages are over the max pv voltage
     def set_pv_volt(self, volt1, volt2, volt3):
+    	assert volt1 <= MAX_PV_VOLTAGE and volt2 <= MAX_PV_VOLTAGE and volt3 <= MAX_PV_VOLTAGE
         v = bytearray(6)
         v[0:2] = toBytes(volt1, 2)
         v[2:4] = toBytes(volt2, 2)
@@ -212,7 +224,9 @@ class Power(object):
     # MODE = 0: Hardware default power point
     # MODE = 1: Maximum power point tracking
     # MODE = 2: Fixed software powerpoint, value set with SET_PV_VOLT, default 4V
+    # raises: AssertionError if mode is not 0, 1, or 2
     def set_pv_auto(self, mode):
+    	assert mode in [0, 1, 2]
         self.write(CMD_SET_PV_AUTO, [mode])
 
     # returns bytearray with heater modes
@@ -220,7 +234,9 @@ class Power(object):
     # heater    [1 byte]  -> 0 = BP4, 1 = Onboard, 2 = Both
     # mode      [1 byte]  -> 0 = OFF, 1 = ON
     # return    [2 bytes] -> heater modes
+    # raises: AssertionError if variables are not in correct range
     def set_heater(self, command, heater, mode):
+    	assert command == 0 and heater in [0, 1, 2] and mode in [0, 1]
         self.write(CMD_SET_HEATER, [command, heater, mode])
         return self.read(2)
 
@@ -238,7 +254,9 @@ class Power(object):
 
     # Use this command to control the config system.
     # cmd [1 byte] -> cmd = 1: Restore default config
+    # raises: AssertionError if command is not 1
     def config_cmd(self, command):
+    	assert command == 1
         self.write(CMD_CONFIG_CMD, [command])
 
     # returns eps_config_t structure
@@ -247,6 +265,7 @@ class Power(object):
         return c_bytesToStruct(self.read(SIZE_EPS_CONFIG_T), "eps_config_t")
 
     # takes eps_config_t struct and sets configuration
+    # raises: AssertionError if struct is not eps_config_t
     def config_set(self, struct):
         assert type(struct) == eps_config_t
         array = struct >>_>> c_structToBytes >>_>> bytesToList
@@ -259,7 +278,9 @@ class Power(object):
 
     # Use this command to control the config 2 system.
     # cmd [1 byte] -> cmd=1: Restore default config; cmd=2: Confirm current config
+    # raises: AssertionError if command is not a valid value
     def config2_cmd(self, command): 
+    	assert command in [1, 2]
         self.write(CMD_CONFIG2_CMD, [command]) 
 
     # Use this command to request the P31 config 2.
@@ -270,6 +291,7 @@ class Power(object):
 
     # Use this command to send config 2 to the P31
     # and save it (remember to also confirm it)
+    # raises: AssertionError if struct is not eps_config2_t
     def config2_set(self, struct):
         assert type(struct) == eps_config2_t
         array = struct >>_>> c_structToBytes >>_>> bytesToList
